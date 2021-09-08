@@ -71,30 +71,30 @@ A continuación, se presentaran diferentes preguntas que abordan las temáticas 
 ¿Por qué la estadística es importante?, ¿Que nos permite realizar con los datos?. De algún ejemplo.
 
 > Porque la estadística es una herramienta que trabaja el análisis e interpretación de datos, permitiendonos Describir, Decidir y Predecir el mundo que nos rodea.
-
+>
 > Un ejemplo visto en clase es el estudio de las grasas saturadas. Una idea común es que comer muchas grasas saturadas, o incluso consumir un poco de ellas es muy perjudicial a la salud. Pero resulta que después de un estudio estadístico se pudo determinar que no solo no son malas, si no que hasta cierto punto estas son beneficiosas para la salud.
-
+>
 > De no ser por la estadística, no podríamos haber descrito realmente la influencia de las grasas saturadas sobre la salud, y nos hubieramos basado en un pensamiento más Eurístico que Empírico para la desicion de dietas, nutrición, etc.
 
 #### **Pregunta 2:**
 Un amigue cercano a usted le comenta que le preocupa salir a la calle cuando hay ofertas en los helados, esto debido a que ha visto el siguiente titular en un famoso diario chileno: "El aumento en la compra de helados tiene una alta correlación con la muerte de personas en Santiago". ¿Que le recomendaría a su amigue sobre el titular leído?, ¿Debería preocuparse tanto?.
 
 > Le recomendaría que debería dejar de preocuparse, dado que el titular divulga probablemente información falsa y sin un estudio estadístico exhastivo. 
-
+>
 >En la disciplina de la estadística es muy dificil saber cuando tenemos causalidades directas entre variables, dado que varias relaciones ocultan otras realidades y relaciones ocultas, las cuales llamamos *variables de confusión*. 
-
+>
 >Lo anterior lleva a que la **Correlación entre variables no implica Causalidad**, lo cuál en palabras más simples y aplicado al ejemplo significa que *no porque aumente la cantidad de ofertas de helados significa que más gente va a morir*. No estamos considerando otras variables ocultas, como por ejemplo, probablemente todo lo anterior se debe al aumento de la temperatura en la ciudad de Santiago.
 
 #### **Pregunta 3:**
 Señale las diferentes aplicaciones que poseen las visualizaciones: Boxplot, histograma, gráfico de pie y scatterplot.
 
-> Boxplot: 
-
-> Histograma:
-
-> Gráfico de Pie:
-
-> Scatterplot:
+> **Boxplot**: Nos permite visualizar la **distribución de datos numéricos**, pero a diferencia de los gráficos de funciones de densidad o probabilidad como la normal, este segmenta los datos en cuartiles y es capaz de mostrarlos utilizando una única dimensión. La marca central indica la mediana, el rectángulo central indica donde se ubica el 25% de los datos menores y 25% de los datos mayores a la mediana, mientras que los *bigotes* indican los valores más externos. Este a su vez sirve para poder observar outliers o valores atípicos dentro de los datos.
+>
+> **Histograma**: Nos permiten visualizar la **distribución completa** de los datos numéricos, ya sean discretos o continuos (utilizando rangos de valores). Al visualizar por completo la distribución de los datos por rangos, podemos tener una idea de la forma que toma la función de de densidad de probabilidad del dataset.
+>
+> **Gráfico de Pie**: A diferencia de los gráficos anteriores, el Pie Chart sirve para visualizar proporciones numéricas de un conjunto de datos. Es útil cuando queremos visualizar distribuciones de variables categóricas, pero no es viable para mostrar demasiados datos al dificultar su comprensión.
+>
+> **Scatterplot**: Este gráfico utiliza coordenadas cartesianas para graficar datos numéricos con dos o más variables. Es útil para apreciar el nivel de dependencia y correlación entre dos variables numéricas de un dataset, sean lineales o no lineales.
 
 
 #### **Pregunta 4:**
@@ -152,14 +152,14 @@ Una famosa fabrica de dulces señala que solo el $5\%$ de sus dulces contienen m
 **Nota:** Puede ser útil https://www.statskingdom.com/z_table.html
 
 > Utilizando el enlace podemos determinar que $\mathbb{P}(X < -1.645) \approx 0.05$. Luego utilizando que $X = \mu + \sigma Z$ tenemos que:
-
+>
 > $350 = \mu - 1.645 \sigma$
-
+>
 > $\mu = 350 + 1.645*11.2 \approx 368.4$. Finalmente $\mu  \approx 368.4$ (a)
-
+>
 > Ahora debemos transformar de la distribución actual a la normal, lo cuál se hace utilizando $Z = \frac{X - \mu}{\sigma}$. Así desarrollamos como sigue:
-
-> $Z = \frac{390 - 368.4}{11.2} \approx 1.93$. Y viendo la tabla del enlace podemos determinar que $\mathbb{P}(X < 1.93) \approx 0.97 \Rightarrow \mathbb{P}(X > 1.93) \approx 1 - 0.97 = 3%$. (b)
+>
+> $Z = \frac{390 - 368.4}{11.2} \approx 1.93$. Y viendo la tabla del enlace podemos determinar que $\mathbb{P}(X < 1.93) \approx 0.97 \Rightarrow \mathbb{P}(X > 1.93) \approx 1 - 0.97 = 3 \%$ (b)
 
 ---
 
@@ -194,8 +194,88 @@ En base al dataset propuesto realice un análisis exploratorio de los datos (EDA
 - [ ] Visualice a través de un histograma como distribuyen las variables respecto a los TARGET.
 
 **Respuesta**
+
 ```{r eval=TRUE}
+hdb <- read.csv("hearth_database.csv")
+head(hdb)
 ```
+
+Es importante chequear si es que existen valores nulos dentro del dataset antes de realizar la exploración sobre este. Para revisar la presencia de valores inexistentes se utilizará la función is.na(), que retorna un valor de verdad dependiendo si el dato es NA o no. Realizaremos la operación suma sobre estos valores booleanos, si la suma resultante es 0 quiere decir que no se encontraron valores en el dataset en que is.na() retornará TRUE, lo que nos indicaría que no hay datos inexistentes en las columnas.
+
+```{r eval=TRUE}
+sum(is.na(hdb))
+```
+La función ```summary``` aplica estadísticas a cada columna. En particular, indica el promedio, mediana, quantiles, máximo, mínimo, entre otros. Además, cambiaremos el nombre de la columna age que tenía un error de tipado.
+
+```{r eval=TRUE}
+
+colnames(hdb)[10] <- "age"
+summary(hdb)
+
+```
+
+Para conseguir los quintiles de cada uno de los datos numéricos, utilizaremos la función de R quantile (por algun motivo el for sobre 7 a 14 no retornaba los resultados, por lo que decidí ir uno por uno):
+```{r eval=TRUE}
+colnames(hdb)[7]
+quantile(hdb[, 7], seq(0, 1, 0.2))
+
+colnames(hdb)[8]
+quantile(hdb[, 8], seq(0, 1, 0.2))
+
+colnames(hdb)[9]
+quantile(hdb[, 9], seq(0, 1, 0.2))
+
+colnames(hdb)[10]
+quantile(hdb[, 10], seq(0, 1, 0.2))
+
+colnames(hdb)[11]
+quantile(hdb[, 11], seq(0, 1, 0.2))
+
+colnames(hdb)[12]
+quantile(hdb[, 12], seq(0, 1, 0.2))
+
+colnames(hdb)[13]
+quantile(hdb[, 13], seq(0, 1, 0.2))
+
+colnames(hdb)[14]
+quantile(hdb[, 14], seq(0, 1, 0.2))
+
+```
+
+Ahora veremos la Matriz de Pearson para visualizar las correlaciones entre todas las variables numéricas:
+
+```{r eval=TRUE}
+library(ggplot2)
+
+```
+
+
+
+Boxplots
+
+```{r eval=TRUE}
+ggplot(data = hdb, aes(y = slope , x = target)) +
+  geom_boxplot() 
+ggplot(data = hdb, aes(y = ca , x = target)) +
+  geom_boxplot() 
+ggplot(data = hdb, aes(y = thal , x = target)) +
+  geom_boxplot() 
+ggplot(data = hdb, aes(y = age , x = target)) +
+  geom_boxplot() 
+ggplot(data = hdb, aes(y = trestbps , x = target)) +
+  geom_boxplot() 
+ggplot(data = hdb, aes(y = chol , x = target)) +
+  geom_boxplot() 
+ggplot(data = hdb, aes(y = thalach , x = target)) +
+  geom_boxplot() 
+ggplot(data = hdb, aes(y = oldpeak , x = target)) +
+  geom_boxplot()
+
+```
+
+
+
+
 
 ---
 
@@ -205,7 +285,7 @@ Pruebe el teorema central del limite aplicando un muestreo de la media en las di
 
 **Respuesta**
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 # Definición de variables o estructuras necesarias para el muestreo.
 n <- 1000
 
