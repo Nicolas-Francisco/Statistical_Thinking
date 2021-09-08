@@ -127,11 +127,29 @@ dbinom(x, size, p)
 
 ```
 
-
 #### **Pregunta 7:**
 Supongamos que el 10% de los alumnos del curso utilizan Macintosh, el 60% utiliza Windows y el 30% utiliza Linux. Supongamos que el 50% de los usuarios de Mac, el 78% de los usuarios de Windows y el 20% de los usuarios de Linux han sucumbido bajo un terrible virus. Al seleccionar una persona al azar nos enteramos de que su sistema está infectado por el virus. ¿Cuál es la probabilidad de que sea un alumno con Windows?.
 
-> Respuesta Aquí
+> Recopilemos las probabilidades conocidas:
+>
+> **SO:** M 10%, W 60%, 30$ L.
+>
+> **Virus:** M 50%, 78% W, 20% L.
+>
+> Sabiendo que la persona escogida si tiene un virus, debemos calcular la probabilidad de que el alumno tenga windows, esto es, calcular $\mathbb{P}( \text{Windows} | \text{Virus})$. Ahora por Teorema de Bayes, tenemos que $\mathbb{P}(X | Y) = \frac{\mathbb{P}(Y | X)*\mathbb{P}(X) }{\mathbb{P}(Y)}$, y definiendo $X$ como el evento de que alguien tenga Windows, e $Y$ como el evento de que alguien tenga el Virus, tendremos lo siguiente:
+>
+> $\mathbb{P}(\text{Windows}, \text{Virus}) = \frac{\mathbb{P}(\text{Virus} | \text{Windows}) * \mathbb{P}(\text{Windows})}{\mathbb{P}(\text{Virus})}$
+>
+> $\mathbb{P}(\text{Windows}, \text{Virus}) = \frac{0.78 * 0.6}{\mathbb{P}(\text{Virus})}$
+>
+> Ahora, usando que:
+>
+> $\mathbb{P}(X) = \sum^{n}_{i=1} \mathbb{P}(X, Y_{i}) = \sum^{n}_{i=1} \mathbb{P}(X | Y_{i}) * \mathbb{P}(Y_{i})$
+>
+> Podemos calcular $\mathbb{P}(\text{Virus}) = \sum^{n}_{i=1} \mathbb{P}(X | Y_{i}) * \mathbb{P}(Y_{i}) = 0.5*0.1 + 0.78*0.6 + 0.2*0.3 = 0.578$ 
+>
+> Finalmente $\mathbb{P}(\text{Windows}, \text{Virus}) = \frac{0.78 * 0.6}{0.578} \approx 0.81$
+
 
 #### **Pregunta 8:**
 Señale si las siguientes declaraciones son verdaderas o falsas respecto a las variables aleatorias:
@@ -141,7 +159,7 @@ Señale si las siguientes declaraciones son verdaderas o falsas respecto a las v
 - [ ] La CDF puede ser representada como la integral de la PDF y PMF.
 - [ ] Una CDF es definida para todo x, continua hacia la derecha y no es decreciente.
 
-> Respuesta Aquí
+> Todas son Verdaderas.
 
 #### **Pregunta 9:**
 Una famosa fabrica de dulces señala que solo el $5\%$ de sus dulces contienen menos de $350$ gramos. Si los dulces elaborados por la fabrica distribuyen de forma normal, con media $\mu$ y desviación estándar $11.2$. Responda las siguientes preguntas:
@@ -284,17 +302,160 @@ ggplot(data = hdb, aes(y = oldpeak , x = target)) +
 Pruebe el teorema central del limite aplicando un muestreo de la media en las distribuciones Poisson, Exponencial y una a su elección. Grafique los resultados obtenidos y señale aproximadamente el numero de muestreos necesarios para obtener el resultado esperado, pruebe esto con las siguientes cantidades de muestreo $\{10,100,1000,5000\}$. ¿El efecto ocurre con el mismo número de muestreo para todas las distribuciones?.
 
 **Respuesta**
+Primero creamos nuestros vectores con datos de distribución aleatorios
 
 ```{r eval=TRUE}
-# Definición de variables o estructuras necesarias para el muestreo.
-n <- 1000
-
-# Realizar el muestreo de las distribuciones.
-for(i in 1:n) {
+# Elementos aleatorios con distribución de Poisson
+poisson_1 <- rpois(10, lambda = 3)
+poisson_2 <- rpois(100, lambda = 3)
+poisson_3 <- rpois(1000, lambda = 3)
+poisson_4 <- rpois(5000, lambda = 3)
   
-}
+# Elementos aleatorios con distribución Exponencial
+exp_1 <- rexp(10, rate = 1)
+exp_2 <- rexp(100, rate = 1)
+exp_3 <- rexp(1000, rate = 1)
+exp_4 <- rexp(5000, rate = 1)
 
-# Código para gráficos
+# Elementos aleatorios con distribución Normal
+norm_1 <- rnorm(10, 0, 1)
+norm_2 <- rnorm(100, 0, 1)
+norm_3 <- rnorm(1000, 0, 1)
+norm_4 <- rnorm(5000, 0, 1)
+
+```
+
+Luego graficamos cada uno de ellos:
+#### Poisson
+```{r eval=TRUE}
+# Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
+pois1 <- data.frame(vals=poisson_1)
+# Posteriormente creamos el plot que mostraremos en pantalla
+p1<-ggplot(pois1, aes(x=vals)) + # Elegimos el dataframe a plotear
+  geom_histogram(aes(y=..density..), colour="black", fill="white") + # Creamos el Histograma
+  geom_density(alpha=.2, fill="#FF6666") + # Ploteamos la densidad del dataframe
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) + # Ploteamos la mediana del dataframe
+  ggtitle("Poisson Distribution \n n = 10 , lambda = 3") +
+  theme(plot.title = element_text(hjust = 0.5)) # Creamos el título y su tema
+p1  # Finalmente ploteamos toda la figura descrita anteriormente
+
+pois2 <- data.frame(vals=poisson_2)
+p2<-ggplot(pois2, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Poisson Distribution \n n = 100 , lambda = 3") +
+  theme(plot.title = element_text(hjust = 0.5))
+p2
+
+pois3 <- data.frame(vals=poisson_3)
+p3<-ggplot(pois3, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Poisson Distribution \n n = 1000 , lambda = 3") +
+  theme(plot.title = element_text(hjust = 0.5))
+p3
+
+pois4 <- data.frame(vals=poisson_4)
+p4<-ggplot(pois4, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Poisson Distribution \n n = 5000 , lambda = 3") +
+  theme(plot.title = element_text(hjust = 0.5))
+p4
+```
+
+#### Exponencial
+```{r eval=TRUE}
+exp1 <- data.frame(vals=exp_1)
+e1<-ggplot(exp1, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Exponential Distribution \n n = 10 , rate = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+e1
+
+exp2 <- data.frame(vals=exp_2)
+e2<-ggplot(exp2, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Exponential Distribution \n n = 100 , rate = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+e2
+
+exp3 <- data.frame(vals=exp_3)
+e3<-ggplot(exp3, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Exponential Distribution \n n = 1000 , rate = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+e3
+
+exp4 <- data.frame(vals=exp_4)
+e4<-ggplot(exp4, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Exponential Distribution \n n = 5000 , rate = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+e4
+
+```
+
+#### Normal
+```{r eval=TRUE}
+norm1 <- data.frame(vals=norm_1)
+n1<-ggplot(norm1, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Normal Distribution \n n = 10 , mu = 0 , sigma = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+n1
+
+norm2 <- data.frame(vals=norm_2)
+n2<-ggplot(norm2, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Normal Distribution \n n = 100 , mu = 0 , sigma = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+n2
+
+norm3 <- data.frame(vals=norm_3)
+n3<-ggplot(norm3, aes(x=vals)) +
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Normal Distribution \n n = 1000 , mu = 0 , sigma = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+n3
+
+norm4 <- data.frame(vals=norm_4)
+n4<-ggplot(norm4, aes(x=vals)) + 
+  geom_histogram(aes(y=..density..), colour="black", fill="white") +
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(vals)),
+            color="blue", linetype="solid", size=1) +
+  ggtitle("Normal Distribution \n n = 5000 , mu = 0 , sigma = 1") +
+  theme(plot.title = element_text(hjust = 0.5))
+n4
 ```
 
 ---
@@ -307,7 +468,8 @@ Realice el experimento de lanzar una moneda cargada 1000 veces y observe el comp
 **Respuesta**
 
 ```{r eval=FALSE}
-# Simular lanzamientos
+
+
 for (lanzamientos in 1:1000) {
   
 }
