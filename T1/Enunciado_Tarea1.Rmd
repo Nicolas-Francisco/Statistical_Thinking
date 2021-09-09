@@ -92,9 +92,9 @@ Señale las diferentes aplicaciones que poseen las visualizaciones: Boxplot, his
 >
 > **Histograma**: Nos permiten visualizar la **distribución completa** de los datos numéricos, ya sean discretos o continuos (utilizando rangos de valores). Al visualizar por completo la distribución de los datos por rangos, podemos tener una idea de la forma que toma la función de de densidad de probabilidad del dataset.
 >
-> **Gráfico de Pie**: A diferencia de los gráficos anteriores, el Pie Chart sirve para visualizar proporciones numéricas de un conjunto de datos. Es útil cuando queremos visualizar distribuciones de variables categóricas, pero no es viable para mostrar demasiados datos al dificultar su comprensión.
+> **Gráfico de Pie**: A diferencia de los gráficos anteriores, el Pie Chart sirve para **visualizar proporciones numéricas** de un conjunto de datos. Es útil cuando queremos visualizar distribuciones de variables categóricas, pero no es viable para mostrar demasiados datos al dificultar su comprensión.
 >
-> **Scatterplot**: Este gráfico utiliza coordenadas cartesianas para graficar datos numéricos con dos o más variables. Es útil para apreciar el nivel de dependencia y correlación entre dos variables numéricas de un dataset, sean lineales o no lineales.
+> **Scatterplot**: Este gráfico utiliza coordenadas cartesianas para graficar datos numéricos con dos o más variables. Es útil para apreciar el nivel de **dependencia y correlación entre dos variables numéricas** de un dataset, sean lineales o no lineales.
 
 
 #### **Pregunta 4:**
@@ -105,7 +105,28 @@ Suponga que esta estudiando la diferencia en los sueldos de las personas que viv
 #### **Pregunta 5:**
 En base al mismo dataset de sueldos para las regiones de Santiago y Rancagua, le comentan que existe un error en los datos y que estos deben ser modificados aumentando un 10% el valor original y sumando $15.000$ a cada uno de los datos. ¿Como se ve afectada la media, mediana y desviación estándar con esta modificación?. Explique a través de ecuaciones el cambio que experimentan las métricas de resumen respecto al valor original, considere para el caso de la media $\bar{X}_{old} = \dfrac{1}{m} \sum^{m}_{i=1} x_i$ y $sd_{old} = \sqrt{\dfrac{1}{(m-1)}\sum_{i=1}^{m}(x_i-\bar{x})^{2}}$ para la desviación estándar.
 
-> Respuesta Aquí
+> **Promedio:**
+>
+> $\bar{X}_{new} = \dfrac{1}{m} \sum^{m}_{i=1} 1.1x_i + 15000 = \dfrac{1.1}{m} \sum^{m}_{i=1} x_i + \dfrac{1}{m} \sum^{m}_{i=1} 15000$
+>
+> Donde la sumatoria de los x de al final corresponde justo al promedio anterior, teniendo que:
+>
+> $\bar{X}_{new} = 1.1 \bar{X}_{old} + 15000$
+>
+> Que es justamente la modificación realizada a cada dato por separado. Luego este cambió linealmente respecto a la modificación.
+>
+> **Mediana:** Debido a que esta depende de la cantidad de datos y no de sus valores, esta variará de la misma forma en la que lo hace la mediana anterior. Luego la mediana también cambia linealmente respecto a la modificación.
+>
+>
+> **Desviación Estándar:**
+>
+> $sd_{new} = \sqrt{\dfrac{1}{(m-1)}\sum_{i=1}^{m}((1.1x_i + 15000) - (1.1\bar{x} + 15000)^{2}} = \sqrt{\dfrac{1.1^{2}}{(m-1)}\sum_{i=1}^{m}(x_i - \bar{x})^{2}}$
+> 
+> Donde la sumatoria final corresponde justamente a la desviación estandar anterior pero por un factor 1.1, teniendo que:
+>
+> $sd_{new} = 1.1 sd_{old}$
+>
+> Que es el la pendiente de la modificiación realizada a los datos, Luego este aumentó en un 10 porciento.
 
 #### **Pregunta 6:**
 Suponga que debe responder un examen sorpresa de 10 preguntas, con 5 alternativas por cada pregunta. ¿Cual es la probabilidad de obtener mas de 5 alternativas correctas si responde de forma aleatoria todo el examen?.
@@ -118,13 +139,17 @@ Suponga que debe responder un examen sorpresa de 10 preguntas, con 5 alternativa
 
 # La probabilidad de responder cada pregunta correctamente es de un quinto:
 p = 0.2
-# Sabemos que son 5 preguntas de 10: 
-x = 5
+# Sabemos que son más de 5 preguntas de 10: 
+x = c(6:10)
 size = 10
 
 # Luego la probabilidad solicitada es:
-dbinom(x, size, p)
+prob = 0
+for(val in x){
+  prob = prob + dbinom(val, size, p)
+}
 
+prob
 ```
 
 #### **Pregunta 7:**
@@ -159,7 +184,13 @@ Señale si las siguientes declaraciones son verdaderas o falsas respecto a las v
 - [ ] La CDF puede ser representada como la integral de la PDF y PMF.
 - [ ] Una CDF es definida para todo x, continua hacia la derecha y no es decreciente.
 
-> Todas son Verdaderas.
+> Falso, dado que para una $f(x)$ continua $\mathbb{P}(X=x)$ siempre es 0, solo pueden evaluarse en rangos.
+>
+> Falso, ya que una PDF si puede tener valores iguales o mayores a 1.
+>
+> Falso, ya que en el caso de las PMF estamos con variables discretas, por lo que no es una función integrable. En vez de eso es necesaria una sumatoria.
+>
+> Verdadera.
 
 #### **Pregunta 9:**
 Una famosa fabrica de dulces señala que solo el $5\%$ de sus dulces contienen menos de $350$ gramos. Si los dulces elaborados por la fabrica distribuyen de forma normal, con media $\mu$ y desviación estándar $11.2$. Responda las siguientes preguntas:
@@ -325,8 +356,11 @@ norm_4 <- rnorm(5000, 0, 1)
 
 ```
 
-Luego graficamos cada uno de ellos:
+Ya teniendo todos nuestros valores aleatorios, pasaremos a graficarlos en histogramas con sus densidades respectivas con el fin de observar que tanto se asimilan en su mediana y en la función de densidad teórica de cada distribución, según lo esperado en el Teorema Central del Límite
+
 #### Poisson
+Partiendo por la distribución de Poisson, el factor lamda ocupado para la generación de valores aleatorios corresponde justamente a su media.
+
 ```{r eval=TRUE}
 # Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
 pois1 <- data.frame(vals=poisson_1)
@@ -336,6 +370,8 @@ p1<-ggplot(pois1, aes(x=vals)) + # Elegimos el dataframe a plotear
   geom_density(alpha=.2, fill="#FF6666") + # Ploteamos la densidad del dataframe
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) + # Ploteamos la mediana del dataframe
+  geom_vline(aes(xintercept=3),
+            color="red", linetype="solid", size=1) +  # Ploteamos además el lambda
   ggtitle("Poisson Distribution \n n = 10 , lambda = 3") +
   theme(plot.title = element_text(hjust = 0.5)) # Creamos el título y su tema
 p1  # Finalmente ploteamos toda la figura descrita anteriormente
@@ -346,6 +382,8 @@ p2<-ggplot(pois2, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=3),
+            color="red", linetype="solid", size=1) +
   ggtitle("Poisson Distribution \n n = 100 , lambda = 3") +
   theme(plot.title = element_text(hjust = 0.5))
 p2
@@ -356,6 +394,8 @@ p3<-ggplot(pois3, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=3),
+            color="red", linetype="solid", size=1) +
   ggtitle("Poisson Distribution \n n = 1000 , lambda = 3") +
   theme(plot.title = element_text(hjust = 0.5))
 p3
@@ -366,12 +406,19 @@ p4<-ggplot(pois4, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=3),
+            color="red", linetype="solid", size=1) +
   ggtitle("Poisson Distribution \n n = 5000 , lambda = 3") +
   theme(plot.title = element_text(hjust = 0.5))
 p4
 ```
 
+Notemos primero que a medida que aumentaba la cantidad de datos, la media muestral fué acercandose cada vez más a la media teórica. Por otra parte, la forma oscilante de la densidad de los datos se deben a que estos son datos discretos y no continuos, pero sus cimas forman justamente una distribución de Poisson como tal.
+
+Solo basta decir que este no toma muy claramente la distribución esperada por el Teorema Central del Límite hasta los 50000 datos, esto primero por las diferencias notables de la media teórica con la calculada hasta esta cantidad de datos, y por la forma de los datos con menor probabilidad.
+
 #### Exponencial
+Continuando con la distribución Exponencial, notemos que su media corresponde justamente al rate indicado en la generación de los datos aleatorios. Así, podemos generar los siguientes gráficos:
 ```{r eval=TRUE}
 exp1 <- data.frame(vals=exp_1)
 e1<-ggplot(exp1, aes(x=vals)) + 
@@ -379,6 +426,8 @@ e1<-ggplot(exp1, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=1),
+            color="red", linetype="solid", size=1) +
   ggtitle("Exponential Distribution \n n = 10 , rate = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 e1
@@ -389,6 +438,8 @@ e2<-ggplot(exp2, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=1),
+            color="red", linetype="solid", size=1) +
   ggtitle("Exponential Distribution \n n = 100 , rate = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 e2
@@ -399,6 +450,8 @@ e3<-ggplot(exp3, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=1),
+            color="red", linetype="solid", size=1) +
   ggtitle("Exponential Distribution \n n = 1000 , rate = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 e3
@@ -409,13 +462,21 @@ e4<-ggplot(exp4, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=1),
+            color="red", linetype="solid", size=1) +
   ggtitle("Exponential Distribution \n n = 5000 , rate = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 e4
 
 ```
 
+Es clara la similitud de la función de densidad con 5000 datos y la distribución exponencial teórica. En este caso la media calculada y la teórica en el último gráfico se sobreponen de forma perfecta, dejando en claro que ambas son prácticamente iguales.
+
+Esta distribución, a diferencia de la de Poisson, ya obtiene similitudes con la distribución teórica a partir de los 1000 datos, por lo que podríamos decir que este necesita menor cantidad de datos para apreciar los resultados del Teorema Central del límite.
+
+
 #### Normal
+Finalmente, la distribución escogida para el final fué la bien conocida distribución Normal o Gaussiana, donde su media es 0 y su desviación 1:
 ```{r eval=TRUE}
 norm1 <- data.frame(vals=norm_1)
 n1<-ggplot(norm1, aes(x=vals)) + 
@@ -423,6 +484,8 @@ n1<-ggplot(norm1, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=0),
+            color="red", linetype="solid", size=1) +
   ggtitle("Normal Distribution \n n = 10 , mu = 0 , sigma = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 n1
@@ -433,6 +496,8 @@ n2<-ggplot(norm2, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=0),
+            color="red", linetype="solid", size=1) +
   ggtitle("Normal Distribution \n n = 100 , mu = 0 , sigma = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 n2
@@ -443,6 +508,8 @@ n3<-ggplot(norm3, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=0),
+            color="red", linetype="solid", size=1) +
   ggtitle("Normal Distribution \n n = 1000 , mu = 0 , sigma = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 n3
@@ -453,10 +520,16 @@ n4<-ggplot(norm4, aes(x=vals)) +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=0),
+            color="red", linetype="solid", size=1) +
   ggtitle("Normal Distribution \n n = 5000 , mu = 0 , sigma = 1") +
   theme(plot.title = element_text(hjust = 0.5))
 n4
 ```
+
+Al igual que la distribución Exponencial, esta ya presenta similitudes claras a partir de los mil datos, en especial con el valor de la media muestral y teórica.
+
+Ya teniendo todos los gráficos anteriores, podríamos determinar que no todas las distribuciones necesitan la misma cantidad de datos para que las implicancias del Teorema Central del límite se observen de forma clara. Un ejemplo es la distribución de Poisson, la cuál hasta los 1000 datos podríamos haber confundido con la distribución exponencial. 
 
 ---
 
