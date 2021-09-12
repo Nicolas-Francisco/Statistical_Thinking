@@ -655,23 +655,135 @@ Se le aconseja que para simular los lanzamientos de dados utilice la función `s
 
 **Respuesta:**
 
-```{r eval=FALSE}
+```{r eval=TRUE}
 # Primer grupo de eventos
 N_lan = 1000 # Numero de lanzamientos
   
-L_A =  # Lanzamientos favorables A = c(1, 2, 6)
-L_B =  # Lanzamientos favorables B = c(1, 2, 3, 4)
-L_AB = # Lanzamientos favorables AB = c(1, 2)
+L_A = c(0) # Lanzamientos favorables A = c(1, 2, 6)
+L_B = c(0) # Lanzamientos favorables B = c(1, 2, 3, 4)
+L_AB = c(0) # Lanzamientos favorables AB = c(1, 2)
+
+# Contadores para los lanzamientos
+C_A <- 0
+C_B <- 0
+C_AB <- 0
+
+# Ciclo for de simulación de los dados.
+for (i in c(1:1000)){
+  D1 <- sample(1:6,1)
+  D2 <- sample(1:6,1)
+  
+  if (D1 %in% c(1, 2, 6)){ # Evento A 
+    C_A <- C_A + 1
+  }
+  
+  if (D2 %in% c(1, 2, 3, 4)){ # Evento B
+    C_B <- C_B + 1
+  }
+  
+  if (D1 %in% c(1, 2, 6) && D2 %in% c(1, 2, 3, 4)){ # Evento A y B
+    C_AB <- C_AB + 1
+  }
+  
+  # Guardamos en cada iteración las probabilidades 
+  L_A <- append(L_A, C_A/i)
+  L_B <- append(L_B, C_B/i)
+  L_AB <- append(L_AB, C_AB/i)
+}
+
+# Creamos tres dataframes con distintos ids
+probs_A <- data.frame(probabilities = L_A, id = 1)
+probs_B <- data.frame(probabilities = L_B, id = 2)
+probs_AB <- data.frame(probabilities = L_AB, id = 3)
+
+# Generamos el gráfico con los tres resultados
+g <- ggplot(NULL, aes(c(0:1000), y=probabilities)) + # Ploteamos null de 0 a 1000
+  ylim(0, 1) +     
+  xlim(0, 1000) + 
+  geom_line(data = probs_A, col = "red") + # Ploteamos encima el dataset del evento A
+  geom_line(data = probs_B, col = "blue") + # Lo mismo con B
+  geom_line(data = probs_AB, col = "green") + # Lo mismo con A y B
+  # Además añadimos constantes con los valores de las probabilidades teóricas
+  geom_hline(aes(yintercept=1/2),  
+            color="red", linetype="solid", size=1, alpha = 0.3) +
+  geom_hline(aes(yintercept=2/3),  
+            color="blue", linetype="solid", size=1, alpha = 0.3) +
+  geom_hline(aes(yintercept=1/3),  
+            color="green", linetype="solid", size=1, alpha = 0.3) +
+  xlab("Número de Lanzamiento") +  
+  ylab("Probabilidad") + 
+  ggtitle("¿Independencia?") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+g
+
 ```
 
-```{r eval=FALSE}
+Claramente podemos apreciar que las probabilidades calculadas calzan con las observadas en el experimento (como consecuencia de la Ley de los Grandes Números), lo cual confirma la independencia de ambos eventos A y B. Por otro lado, utilizando la misma idea de ploteo, veamos el segundo grupo de eventos que solo involucra a un dado.
+
+```{r eval=TRUE}
 # Segundo grupo de eventos
 N_lan = 1000 # Numero de lanzamientos
   
-L_A =  # Lanzamientos favorables A = c(1, 2, 6)
-L_B =  # Lanzamientos favorables B = c(1, 2, 3)
-L_AB = # Lanzamientos favorables AB = c(1, 2)
+L_A = c(0) # Lanzamientos favorables A = c(1, 2, 6)
+L_B = c(0) # Lanzamientos favorables B = c(1, 2, 3)
+L_AB = c(0) # Lanzamientos favorables AB = c(1, 2)
+
+# Contadores para los lanzamientos
+C_A <- 0
+C_B <- 0
+C_AB <- 0
+
+
+for (i in c(1:1000)){
+  D1 <- sample(1:6,1)
+  
+  if (D1 %in% c(1, 2, 6)){
+    C_A <- C_A + 1
+  }
+  
+  if (D1 %in% c(1, 2, 3)){
+    C_B <- C_B + 1
+  }
+  
+  if (D1 %in% c(1, 2, 6) && D1 %in% c(1, 2, 3)){
+    C_AB <- C_AB + 1
+  }
+  
+  L_A <- append(L_A, C_A/i)
+  L_B <- append(L_B, C_B/i)
+  L_AB <- append(L_AB, C_AB/i)
+}
+
+
+probs_A <- data.frame(probabilities = L_A, id = 1)
+probs_B <- data.frame(probabilities = L_B, id = 2)
+probs_AB <- data.frame(probabilities = L_AB, id = 3)
+
+g <- ggplot(NULL, aes(c(0:1000), y=probabilities)) +
+  ylim(0, 1) +     
+  xlim(0, 1000) + 
+  geom_line(data = probs_A, col = "red") +
+  geom_line(data = probs_B, col = "blue") +
+  geom_line(data = probs_AB, col = "green") +
+  # Probabilidad teórica del evento A y del evento B por separado (un medio)
+  geom_hline(aes(yintercept=1/2),  
+            color="red", linetype="solid", size=1, alpha = 0.3) +
+  # Probabilidad de A y B asumiendo independencia
+  geom_hline(aes(yintercept=1/4),  
+            color="green", linetype="solid", size=1, alpha = 0.3) +
+  # Probabilidad real del evento A y B
+  geom_hline(aes(yintercept=1/3),  
+            color="black", linetype="solid", size=1, alpha = 0.3) +
+  xlab("Número de Lanzamiento") +  
+  ylab("Probabilidad") + 
+  ggtitle("¿Independencia?") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+g
 ```
+
+Observando las rectas teóricas podemos ver claramente que la probabilidad del evento AB no sigue la probabilidad esperada de 25%, si no que ronda es del 33% (según la recta constante de color negro). Esto nos indica que los eventos A y B NO son eventos independientes.
 
 ---
 
