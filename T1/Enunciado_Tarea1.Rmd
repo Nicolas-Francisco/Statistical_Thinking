@@ -243,6 +243,8 @@ En base al dataset propuesto realice un análisis exploratorio de los datos (EDA
 
 **Respuesta**
 
+Primero que todo, leemos el dataset y lo guardamos en una variable para poder trabajar con estos. Para verificar que efectivamente guardamos el dataset podemos utilizar la función ```head()``` que entrega la cabeza del dataframe:
+
 ```{r eval=TRUE}
 hdb <- read.csv("hearth_database.csv")
 head(hdb)
@@ -253,77 +255,91 @@ Es importante chequear si es que existen valores nulos dentro del dataset antes 
 ```{r eval=TRUE}
 sum(is.na(hdb))
 ```
-La función ```summary``` aplica estadísticas a cada columna. En particular, indica el promedio, mediana, quantiles, máximo, mínimo, entre otros. Además, cambiaremos el nombre de la columna age que tenía un error de tipado.
+
+Ahora, la función ```summary``` aplica estadísticas a cada columna. En particular, indica el promedio, mediana, quantiles, máximo, mínimo, entre otros. Además, cambiaremos el nombre de la columna age que tenía un error de tipeo:
 
 ```{r eval=TRUE}
-
 colnames(hdb)[10] <- "age"
 summary(hdb)
-
 ```
 
-Para conseguir los quintiles de cada uno de los datos numéricos, utilizaremos la función de R quantile (por algun motivo el for sobre 7 a 14 no retornaba los resultados, por lo que decidí ir uno por uno):
+Si de otro modo quisieramos todos los quintiles de los datos numéricos, es necesario aplicar la función ```quantile()``` a cada columna del dataframe, lo cual podemos hacer con la conocida función ```lapply()``` con las columnas como parámetros y la función quantile como la función a aplicar a cada columna:
+
 ```{r eval=TRUE}
-colnames(hdb)[7]
-quantile(hdb[, 7], seq(0, 1, 0.2))
-
-colnames(hdb)[8]
-quantile(hdb[, 8], seq(0, 1, 0.2))
-
-colnames(hdb)[9]
-quantile(hdb[, 9], seq(0, 1, 0.2))
-
-colnames(hdb)[10]
-quantile(hdb[, 10], seq(0, 1, 0.2))
-
-colnames(hdb)[11]
-quantile(hdb[, 11], seq(0, 1, 0.2))
-
-colnames(hdb)[12]
-quantile(hdb[, 12], seq(0, 1, 0.2))
-
-colnames(hdb)[13]
-quantile(hdb[, 13], seq(0, 1, 0.2))
-
-colnames(hdb)[14]
-quantile(hdb[, 14], seq(0, 1, 0.2))
-
+quint <- function(x) quantile(x, probs = seq(0, 1, 1/5))
+quintiles <- lapply(hdb[7:14], quint)
+quintiles
 ```
 
-Ahora veremos la Matriz de Pearson para visualizar las correlaciones entre todas las variables numéricas:
+Ahora, para visualizar la matriz de correlación de Pearson, basta ocupar la función ```cor()``` utilizando el método pearson. Esto lo haremos a los valores numéricos del dataframe y rondearemos los valores obtenidos a solo 3 decimales:
+
+```{r eval=TRUE}
+pearson_matrix = cor(hdb[,7:14], method = "pearson") 
+round(pearson_matrix, 3)
+```
+
+Para visualizar la matriz de correlación utlizaremos la librería corrplot que contiene la función ```corrplot()``` para visualizar dependencias entre variables numéricas con colores y circulos de distintos tamaños:
+
+```{r eval=TRUE}
+library(corrplot)
+corrplot(pearson_matrix, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 50)
+```
+
+Para visualizar los Boxplots de las variables numéricas podemos generar un gráfico simple de boxplot con el rango de las columnas que queremos graficar, obteniendo el siguiente resultado:
+
+```{r eval=TRUE}
+boxplot(x=hdb[,7:14],main="Boxplots")
+```
+
+Para poder apreciar de mejor manera las variables con valores bajos, podríamos separar las columnas slope, ca, thal y oldpeak en un único gráfico, debido a que sus rangos son parecidos y no se aprecian en conjunto con el resto. Así tenemos:
+
+```{r eval=TRUE}
+boxplot(x=hdb[, c(7,8,9,14)], main="Low Values Boxplots")
+boxplot(x=hdb[, c(10,11,12,13)], main="High Values Boxplots")
+```
+
+Ahora, pasaremos a visualizar todas las variables numéricas en función de la varible TARGET a través de histogramas:
 
 ```{r eval=TRUE}
 library(ggplot2)
+library(gridExtra)
+library(grid)
 
+plot1 <- ggplot(hdb[c(1,7)], aes(x=slope)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+plot2 <- ggplot(hdb[c(1,8)], aes(x=ca)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+plot3 <- ggplot(hdb[c(1,9)], aes(x=thal)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+plot4 <- ggplot(hdb[c(1,10)], aes(x=age)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+plot5 <- ggplot(hdb[c(1,11)], aes(x=trestbps)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+plot6 <- ggplot(hdb[c(1,12)], aes(x=chol)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+plot7 <- ggplot(hdb[c(1,13)], aes(x=thalach)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+plot8 <- ggplot(hdb[c(1,14)], aes(x=oldpeak)) +
+  geom_histogram(color="black", fill="white") +
+  facet_grid(target ~ .)
+
+# Hacemos un grid arrange sobre los 8 gráficos para juntarlos en uno solo
+grid.arrange(plot1, plot2, plot3, plot4, 
+             plot5, plot6, plot7, plot8, 
+             # Numero de filas y columnas en los que los queremos sortear
+             ncol=4, nrow=2,
+             # Títulos
+             top = textGrob("Hearth variables sorted by target (Y/N) \n", 
+                            gp=gpar(fontsize=15)))
 ```
-
-
-
-Boxplots
-
-```{r eval=TRUE}
-ggplot(data = hdb, aes(y = slope , x = target)) +
-  geom_boxplot() 
-ggplot(data = hdb, aes(y = ca , x = target)) +
-  geom_boxplot() 
-ggplot(data = hdb, aes(y = thal , x = target)) +
-  geom_boxplot() 
-ggplot(data = hdb, aes(y = age , x = target)) +
-  geom_boxplot() 
-ggplot(data = hdb, aes(y = trestbps , x = target)) +
-  geom_boxplot() 
-ggplot(data = hdb, aes(y = chol , x = target)) +
-  geom_boxplot() 
-ggplot(data = hdb, aes(y = thalach , x = target)) +
-  geom_boxplot() 
-ggplot(data = hdb, aes(y = oldpeak , x = target)) +
-  geom_boxplot()
-
-```
-
-
-
-
 
 ---
 
@@ -332,203 +348,203 @@ ggplot(data = hdb, aes(y = oldpeak , x = target)) +
 Pruebe el teorema central del limite aplicando un muestreo de la media en las distribuciones Poisson, Exponencial y una a su elección. Grafique los resultados obtenidos y señale aproximadamente el numero de muestreos necesarios para obtener el resultado esperado, pruebe esto con las siguientes cantidades de muestreo $\{10,100,1000,5000\}$. ¿El efecto ocurre con el mismo número de muestreo para todas las distribuciones?.
 
 **Respuesta**
-Primero creamos nuestros vectores con datos de distribución aleatorios
+La idea será realizar iteraciones sobre las medias calculadas por cada nueva distribución:
 
 ```{r eval=TRUE}
-# Elementos aleatorios con distribución de Poisson
-poisson_1 <- rpois(10, lambda = 3)
-poisson_2 <- rpois(100, lambda = 3)
-poisson_3 <- rpois(1000, lambda = 3)
-poisson_4 <- rpois(5000, lambda = 3)
-  
-# Elementos aleatorios con distribución Exponencial
-exp_1 <- rexp(10, rate = 1)
-exp_2 <- rexp(100, rate = 1)
-exp_3 <- rexp(1000, rate = 1)
-exp_4 <- rexp(5000, rate = 1)
 
-# Elementos aleatorios con distribución Normal
-norm_1 <- rnorm(10, 0, 1)
-norm_2 <- rnorm(100, 0, 1)
-norm_3 <- rnorm(1000, 0, 1)
-norm_4 <- rnorm(5000, 0, 1)
+# Definición de variables o estructuras necesarias para el muestreo.
+m <- c(10, 100, 1000, 5000)
+main_pois <- c()
+main_exp <- c()
+main_norm <- c()
+
+for (i in 1:4){
+  n = m[i]
+  
+  pois <- c()
+  exp <- c()
+  norm <- c()
+  # Realizar el muestreo de las distribuciones.
+  for(i in 1:n) {
+    # Elementos aleatorios con distribución de Poisson
+    poisson <- rpois(1000, lambda = 3)
+    # Elementos aleatorios con distribución Exponencial
+    exponential <- rexp(1000, rate = 1)
+    # Elementos aleatorios con distribución Normal
+    normal <- rnorm(1000, 0, 1)
+    
+    pois <- append(pois, mean(poisson))
+    exp <- append(exp, mean(exponential))
+    norm <- append(norm, mean(normal))  
+  }
+  
+  main_pois <- append(main_pois, pois)
+  main_exp <- append(main_exp, exp)
+  main_norm <- append(main_norm, norm)
+}
+
 
 ```
 
-Ya teniendo todos nuestros valores aleatorios, pasaremos a graficarlos en histogramas con sus densidades respectivas con el fin de observar que tanto se asimilan en su mediana y en la función de densidad teórica de cada distribución, según lo esperado en el Teorema Central del Límite
-
-#### Poisson
-Partiendo por la distribución de Poisson, el factor lamda ocupado para la generación de valores aleatorios corresponde justamente a su media.
+Ya teniendo todos nuestros valores aleatorios, pasaremos a graficar las medias en histogramas con el fin de observar la distribución y densidad de la variabilidad de las medias calculadas.
 
 ```{r eval=TRUE}
 # Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
-pois1 <- data.frame(vals=poisson_1)
+pois_dt <- data.frame(vals=main_pois[1:10])
 # Posteriormente creamos el plot que mostraremos en pantalla
-p1<-ggplot(pois1, aes(x=vals)) + # Elegimos el dataframe a plotear
+p1 <- ggplot(pois_dt, aes(x=vals)) + # Elegimos el dataframe a plotear
   geom_histogram(aes(y=..density..), colour="black", fill="white") + # Creamos el Histograma
   geom_density(alpha=.2, fill="#FF6666") + # Ploteamos la densidad del dataframe
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) + # Ploteamos la mediana del dataframe
   geom_vline(aes(xintercept=3),
             color="red", linetype="solid", size=1) +  # Ploteamos además el lambda
-  ggtitle("Poisson Distribution \n n = 10 , lambda = 3") +
+  ggtitle("n = 10") +
   theme(plot.title = element_text(hjust = 0.5)) # Creamos el título y su tema
-p1  # Finalmente ploteamos toda la figura descrita anteriormente
 
-pois2 <- data.frame(vals=poisson_2)
-p2<-ggplot(pois2, aes(x=vals)) + 
-  geom_histogram(aes(y=..density..), colour="black", fill="white") +
-  geom_density(alpha=.2, fill="#FF6666") +
+pois_dt <- data.frame(vals=main_pois[11:110])
+p2 <- ggplot(pois_dt, aes(x=vals)) +
+  geom_histogram(aes(y=..density..), colour="black", fill="white") + 
+  geom_density(alpha=.2, fill="#FF6666") + 
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=3),
             color="red", linetype="solid", size=1) +
-  ggtitle("Poisson Distribution \n n = 100 , lambda = 3") +
+  ggtitle("n = 100") +
   theme(plot.title = element_text(hjust = 0.5))
-p2
 
-pois3 <- data.frame(vals=poisson_3)
-p3<-ggplot(pois3, aes(x=vals)) + 
-  geom_histogram(aes(y=..density..), colour="black", fill="white") +
-  geom_density(alpha=.2, fill="#FF6666") +
+pois_dt <- data.frame(vals=main_pois[111:1110])
+p3 <- ggplot(pois_dt, aes(x=vals)) +
+  geom_histogram(aes(y=..density..), colour="black", fill="white") + 
+  geom_density(alpha=.2, fill="#FF6666") + 
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=3),
             color="red", linetype="solid", size=1) +
-  ggtitle("Poisson Distribution \n n = 1000 , lambda = 3") +
+  ggtitle("n = 1000") +
   theme(plot.title = element_text(hjust = 0.5))
-p3
 
-pois4 <- data.frame(vals=poisson_4)
-p4<-ggplot(pois4, aes(x=vals)) + 
-  geom_histogram(aes(y=..density..), colour="black", fill="white") +
-  geom_density(alpha=.2, fill="#FF6666") +
+pois_dt <- data.frame(vals=main_pois[1111:6110])
+p4 <- ggplot(pois_dt, aes(x=vals)) +
+  geom_histogram(aes(y=..density..), colour="black", fill="white") + 
+  geom_density(alpha=.2, fill="#FF6666") + 
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=3),
             color="red", linetype="solid", size=1) +
-  ggtitle("Poisson Distribution \n n = 5000 , lambda = 3") +
+  ggtitle("n = 5000") +
   theme(plot.title = element_text(hjust = 0.5))
-p4
+
+grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2, 
+             top = textGrob("Poisson Distribution \n lambda = 3", 
+                            gp=gpar(fontsize=15)))
+
 ```
 
-Notemos primero que a medida que aumentaba la cantidad de datos, la media muestral fué acercandose cada vez más a la media teórica. Por otra parte, la forma oscilante de la densidad de los datos se deben a que estos son datos discretos y no continuos, pero sus cimas forman justamente una distribución de Poisson como tal.
 
-Solo basta decir que este no toma muy claramente la distribución esperada por el Teorema Central del Límite hasta los 50000 datos, esto primero por las diferencias notables de la media teórica con la calculada hasta esta cantidad de datos, y por la forma de los datos con menor probabilidad.
-
-#### Exponencial
-Continuando con la distribución Exponencial, notemos que su media corresponde justamente al rate indicado en la generación de los datos aleatorios. Así, podemos generar los siguientes gráficos:
 ```{r eval=TRUE}
-exp1 <- data.frame(vals=exp_1)
-e1<-ggplot(exp1, aes(x=vals)) + 
+exp_dt <- data.frame(vals=main_exp[1:10])
+e1 <- ggplot(exp_dt, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=1),
             color="red", linetype="solid", size=1) +
-  ggtitle("Exponential Distribution \n n = 10 , rate = 1") +
+  ggtitle("n = 10") +
   theme(plot.title = element_text(hjust = 0.5))
-e1
 
-exp2 <- data.frame(vals=exp_2)
-e2<-ggplot(exp2, aes(x=vals)) + 
+exp_dt <- data.frame(vals=main_exp[11:110])
+e2 <- ggplot(exp_dt, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=1),
             color="red", linetype="solid", size=1) +
-  ggtitle("Exponential Distribution \n n = 100 , rate = 1") +
+  ggtitle("n = 100") +
   theme(plot.title = element_text(hjust = 0.5))
-e2
 
-exp3 <- data.frame(vals=exp_3)
-e3<-ggplot(exp3, aes(x=vals)) + 
+exp_dt <- data.frame(vals=main_exp[111:1110])
+e3 <- ggplot(exp_dt, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=1),
             color="red", linetype="solid", size=1) +
-  ggtitle("Exponential Distribution \n n = 1000 , rate = 1") +
+  ggtitle("n = 1000") +
   theme(plot.title = element_text(hjust = 0.5))
-e3
 
-exp4 <- data.frame(vals=exp_4)
-e4<-ggplot(exp4, aes(x=vals)) + 
+exp_dt <- data.frame(vals=main_exp[1111:6110])
+e4 <- ggplot(exp_dt, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=1),
             color="red", linetype="solid", size=1) +
-  ggtitle("Exponential Distribution \n n = 5000 , rate = 1") +
+  ggtitle("n = 5000") +
   theme(plot.title = element_text(hjust = 0.5))
-e4
+
+grid.arrange(e1, e2, e3, e4, ncol=2, nrow=2, 
+             top = textGrob("Exponential Distribution \ nrate = 1", 
+                            gp=gpar(fontsize=15)))
 
 ```
 
-Es clara la similitud de la función de densidad con 5000 datos y la distribución exponencial teórica. En este caso la media calculada y la teórica en el último gráfico se sobreponen de forma perfecta, dejando en claro que ambas son prácticamente iguales.
 
-Esta distribución, a diferencia de la de Poisson, ya obtiene similitudes con la distribución teórica a partir de los 1000 datos, por lo que podríamos decir que este necesita menor cantidad de datos para apreciar los resultados del Teorema Central del límite.
-
-
-#### Normal
-Finalmente, la distribución escogida para el final fué la bien conocida distribución Normal o Gaussiana, donde su media es 0 y su desviación 1:
 ```{r eval=TRUE}
-norm1 <- data.frame(vals=norm_1)
-n1<-ggplot(norm1, aes(x=vals)) + 
+norm_df <- data.frame(vals=main_norm[1:10])
+n1 <- ggplot(norm_df, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=0),
             color="red", linetype="solid", size=1) +
-  ggtitle("Normal Distribution \n n = 10 , mu = 0 , sigma = 1") +
+  ggtitle("n = 10") +
   theme(plot.title = element_text(hjust = 0.5))
-n1
 
-norm2 <- data.frame(vals=norm_2)
-n2<-ggplot(norm2, aes(x=vals)) + 
+norm_df <- data.frame(vals=main_norm[11:110])
+n2 <- ggplot(norm_df, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=0),
             color="red", linetype="solid", size=1) +
-  ggtitle("Normal Distribution \n n = 100 , mu = 0 , sigma = 1") +
+  ggtitle("n = 100") +
   theme(plot.title = element_text(hjust = 0.5))
-n2
 
-norm3 <- data.frame(vals=norm_3)
-n3<-ggplot(norm3, aes(x=vals)) +
+norm_df <- data.frame(vals=main_norm[111:1110])
+n3 <- ggplot(norm_df, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=0),
             color="red", linetype="solid", size=1) +
-  ggtitle("Normal Distribution \n n = 1000 , mu = 0 , sigma = 1") +
+  ggtitle("n = 1000") +
   theme(plot.title = element_text(hjust = 0.5))
-n3
 
-norm4 <- data.frame(vals=norm_4)
-n4<-ggplot(norm4, aes(x=vals)) + 
+norm_df <- data.frame(vals=main_norm[1111:6110])
+n4 <- ggplot(norm_df, aes(x=vals)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white") +
   geom_density(alpha=.2, fill="#FF6666") +
   geom_vline(aes(xintercept=mean(vals)),
             color="blue", linetype="solid", size=1) +
   geom_vline(aes(xintercept=0),
             color="red", linetype="solid", size=1) +
-  ggtitle("Normal Distribution \n n = 5000 , mu = 0 , sigma = 1") +
+  ggtitle("n = 5000") +
   theme(plot.title = element_text(hjust = 0.5))
-n4
+
+grid.arrange(n1, n2, n3, n4, ncol=2, nrow=2, 
+             top = textGrob("Normal Distribution \n mu = 0, sigma = 1", 
+                            gp=gpar(fontsize=15)))
 ```
 
-Al igual que la distribución Exponencial, esta ya presenta similitudes claras a partir de los mil datos, en especial con el valor de la media muestral y teórica.
-
-Ya teniendo todos los gráficos anteriores, podríamos determinar que no todas las distribuciones necesitan la misma cantidad de datos para que las implicancias del Teorema Central del límite se observen de forma clara. Un ejemplo es la distribución de Poisson, la cuál hasta los 1000 datos podríamos haber confundido con la distribución exponencial. 
+Notemos que, pese a que todas presentan la distribución Normal esperada por el Teorema Central del Límite, estas distribuciones tienen formas ligeramente distintas entre sí. Por ejemplo, el gráfico generado por las distribuciónes exponencial y Poisson contienen más valores externos hacia la derecha que hacia la izquierda (con n = 100 y 1000), mientras los generados por la distribución normal no. Esto puede deberse a que la distribución exponencial y la de Poisson tiene valores más externos a la curva principal, por lo que es de esperar que las medias calculadas tiendan a ser levemente mayores al resto mientras la proporción de elementos extremos sea relativamente alta al resto (lo cuál ocurre a menor cantidad de datos). Además, podemos apreciar que mientras más aumenta n, la distribución de medias presenta menor proporción de valores externos y más se parece a la distribución normal teórica, lo cuál corresponde justamente a una implicancia del Teorema Central del Límite.
 
 ---
 
@@ -627,7 +643,7 @@ Una primera impresión es que la probabilidad de éxito después de cambiar la p
 Con lo anterior, graficaremos la probabilidad acumulada por cada iteración del juego y además la constante 2/3 para observar cómo esta converge a este valor en vez de 1/3.
 
 ```{r eval=TRUE}
-n <- 100
+n <- 1000
 Probs <- data.frame(probabilities = n_juegos(n, TRUE)) # tiene n + 1 elementos
 # Gráfico de la convergencia
 graph <- ggplot(Probs, aes(x=c(0:n), y=probabilities)) + # graficamos el dataframe
@@ -636,6 +652,8 @@ graph <- ggplot(Probs, aes(x=c(0:n), y=probabilities)) + # graficamos el datafra
   xlim(0, n) +  
   geom_hline(aes(yintercept=2/3),  
             color="red", linetype="solid", size=1, alpha = 0.4) +
+  geom_hline(aes(yintercept=1/3),  
+            color="blue", linetype="solid", size=1, alpha = 0.4) +
   xlab("Número de Juego") +  
   ylab("Probabilidad") + 
   ggtitle("Probabilidad acumulada de ganar al cambiar puerta en Monty Hall") + 
@@ -783,7 +801,7 @@ g <- ggplot(NULL, aes(c(0:1000), y=probabilities)) +
 g
 ```
 
-Observando las rectas teóricas podemos ver claramente que la probabilidad del evento AB no sigue la probabilidad esperada de 25%, si no que ronda es del 33% (según la recta constante de color negro). Esto nos indica que los eventos A y B NO son eventos independientes.
+Observando las rectas teóricas podemos ver claramente que la probabilidad del evento AB no sigue la probabilidad esperada de 25% (recta verde), si no que ronda es del 33% (según la recta constante de color negro). Esto nos indica que los eventos A y B NO son eventos independientes, lo cuál tiene sentido debido a que ambos eventos dependen del valor tomado por un único dado, donde los valores son claramente excluyentes unos con otros (que salga 2 y 3 por ejemplo son eventos dependientes, pues no es posible que salga 3 si es que salió 2).
 
 ---
 
@@ -824,7 +842,7 @@ plot(ruina(apuesta = 50), type="l", col="blue", xlab="N° de juegos", ylab="Fond
 
 Con lo anterior podemos notar que claramente nuestra conjetura es correcta, y que nuestro compañero está equivocado. Realizar siempre la misma apuesta con un valor bajo da la ilusión de ganar más, debido a que esta puede extenderse por más tiempo que con apuestas de mayor valor, además de que se necesita mayor cantidad de aciertos para poder llegar a los límites del fondo.
 
-Por otro lado, con las apuestas de mayor valor se reducen rápidamente la cantidad de apuestas realizadas, debido a que pueden sobrepasar los límites del fondo más rápidamente respecto a las apuestas de menor valor. Por lo anterior podemos inferir que realizar apuestas de valores más altos tienen mayor probabilidad de generar muchas más ganancias por secuencias de victorias consecutivas, pero equivalentemente puede llevar a la quiebra más facilmente.
+Por otro lado, con las apuestas de mayor valor se reducen rápidamente la cantidad de apuestas realizadas, debido a que pueden sobrepasar los límites del fondo más rápidamente respecto a las apuestas de menor valor. Por lo anterior podemos inferir que realizar apuestas de valores más altos tienen mayor probabilidad de generar muchas más ganancias por secuencias de victorias consecutivas, pero equivalentemente puede llevar a la quiebra más rápidamente.
 
 
 &nbsp;
