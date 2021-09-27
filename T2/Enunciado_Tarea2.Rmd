@@ -460,8 +460,8 @@ for (i in 1:n_muestras){
 # Utilizamos el dataframe creado con cada iteración
 plot1 <- ggplot(confidence, aes(mean, c(1:5000), colour = group)) + 
   geom_point() +  # Creamos un gráfico de puntos
-  xlim(0, 1.5) +  # Añadimos límites mara una visualización comoda
-  scale_color_manual(values=c("#83D7FE", "#FE83BB")) +  # Colores de cada punto
+  xlim(0, 1.5) +  # Añadimos límites para una visualización comoda
+  scale_color_manual(values=c("darkturquoise", "deeppink3")) +  # Colores de cada punto
   # Graficamos con geom_errorbar horizontal el intervalo de confianza por cada
   # iteración. Este se calcula como la media calculada más-menos el error calculado.
   geom_errorbarh(aes(xmax = mean + error, xmin = mean - error)) +
@@ -590,6 +590,69 @@ Las actividades por realizar en esta pregunta son las siguientes:
 **Nota:** No se permite la utilización de librerías de bootstrap para esta parte.
 
 **Respuesta:**
+
+```{r, eval=TRUE}
+
+sat_gpa <- read.csv("SAT_GPA.csv")
+head(sat_gpa)
+summary(sat_gpa)
+
+```
+
+```{r, eval=TRUE}
+sapply(sat_gpa, function(x) sum(is.na(x)))
+sat_gpa <- sat_gpa[!is.na(sat_gpa$Bangla),]
+sapply(sat_gpa, function(x) sum(is.na(x)))
+```
+
+```{r eval=TRUE}
+# Calculo de la matriz de correlacion para su visualización
+pearson_matrix = cor(sat_gpa, method = "pearson") 
+round(pearson_matrix, 3)
+
+# Visualización de la matriz de correlación
+library(corrplot)
+corrplot(pearson_matrix, type = "upper", tl.col = "black", tl.srt = 50)
+
+```
+
+```{r eval=TRUE}
+
+# Valor de la correlación de Total y GPA:
+pearson_matrix[11, 10]
+
+```
+
+
+```{r eval=TRUE}
+
+# Utilizado la función de ejemplo de bootstrap visto en clases
+mybootstrap <- function(x, fun, nRuns, size, alpha){
+  values <- vector()
+  for (i in 1: nRuns){
+    samp.i <- sample(x, size = size, replace = T)
+    values[i] <- fun(samp.i)
+  }
+  
+  point.est <- fun(x)
+  se <- sd(values)
+  l.CI <- quantile(values, alpha/2)
+  u.CI <- quantile(values, 1-alpha/2)
+  
+  return(c("Point Estimate" = point.est,
+           "Standart error" = se,
+           "Lower CI Limit" = l.CI,
+           "Upper CI Limit" = u.CI))
+}
+
+```
+
+
+```{r eval=FALSE}
+
+mybootstrap(sat_gpa[10:11], cor , 5000, 125, 0.05)
+
+```
 
 ---
 
