@@ -138,7 +138,7 @@ Suponiendo que la linea roja en los gráficos representa el valor real del pará
 #### **Pregunta 6:**
 Considere que esta trabajando con intervalos de confianza al $95\%$ e intenta estudiar un parámetro $\theta$, ¿porque es incorrecto decir, en la visión frecuentista, que la probabilidad que $\theta$ pertenezca al intervalo es del $95\%$?
 
-> Respuesta Aquí
+> Porque un intervalo de confianza no es una afirmación porbabiliística sobre $\theta$, debido a que el parámetro $\theta$ es un valor fijo en la visión frecuentista y **No** una variable aleatoria. La forma correcta de interpretar el intervalo de confianza es que en el $95\%$ de los experimentos realizados para estimar $\theta$, el intervalo calculado contiene el valor real de $\theta$.
 
 #### **Pregunta 7:**
 Se sabe que al realizar un test de hipótesis es posible equivocarse al tomar una decisión. Sí denotamos $H_0$ como la hipótesis nula y $H_1$ como la hipótesis alternativa, existen dos posibles errores que se pueden obtener: 
@@ -155,7 +155,9 @@ En base a los errores señalados, de un ejemplo de cuando es más relevante dism
 Explique cual es la diferencia entre el test **one-sided** y **two-sided**, de un ejemplo en donde se pueda utilizar **one-sided** y otro donde se pueda utilizar **two-sided**. ¿Es un método mejor que el otro?
 
 
-> Respuesta Aquí
+> La diferencia entre los experimentos **one-sided** y **two-sided** es que en los del primer grupo los sujetos o unidades de experimentación desconocen si es que están siendo sometidos al tratamiento del experimento, mientras que en los experimentos **two-sided** tanto los sujetos como los experimentadores desconocen el cómo se componen los grupos de control y experimentación.
+>
+> Un ejemplo de experimento **one-sided** son los experimentos de tipo *A/B Testing*.  
 
 #### **Pregunta 9:**
 
@@ -173,9 +175,10 @@ En la siguiente sección deberá resolver cada uno de los experimentos computaci
 
 Para el desarrollo preste mucha atención en los enunciados, ya que se le solicitará la implementación de métodos sin uso de funciones predefinidas. Por otro lado, Las librerías permitidas para desarrollar de la tarea 2 son las siguientes:
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Manipulación de estructuras
 library(tidyverse)
+library(Rlab)
 
 # Para realizar plots
 library(ggplot2)
@@ -183,6 +186,7 @@ library(plotly)
 
 # Manipulación de varios plots en una imagen.
 library(gridExtra)
+library(grid)
 ```
 
 
@@ -194,6 +198,171 @@ Esta pregunta tiene como objetivo comprobar a través de gráficos las caracter�
 - [ ] Sabemos que no todos los estimadores insesgados son consistentes. Considere  el estimador $T_{n} = \hat{p}_{n} + \epsilon_{n}$ donde $\epsilon_{n} \sim \mathcal{N}(0,1)$ es posible verificar que $T_{n}$ es insesgado pero no es consistente, para ver esto repita lo que realizo en el punto anterior y estudie lo que sucede. ¿Porque cree que no es consistente el estimador?, Justifique su respuesta.
 
 **Respuesta:**
+
+#### Parte 1
+
+Primero, creaemos los datos necesarios para poder generar los gráficos:
+
+```{r eval=TRUE}
+
+# Definición de variables o estructuras necesarias para el muestreo.
+prob <- 0.5
+m <- c(10, 50, 100, 1000)
+n_individuos = 5000
+main_bernoulli <- c()
+means <- c()
+
+# Generamos una población que se comporta como Bernoulli(p=0.5)
+bernoulli = rbern(n_individuos, p = prob)
+real_mean = mean(bernoulli)
+
+# Por cada tamaño de muestras
+for(i in m) {
+  # Saco una muestra de tamaño i de la población
+  sampling <- sample(bernoulli, i, replace = FALSE)
+  
+  # Las concateno al vector principal y calculo el estimador
+  main_bernoulli <- append(main_bernoulli, sampling)
+  hat_p = mean(sampling)
+  means <- append(means, hat_p)
+}
+
+```
+
+Ya obtenidos los datos de los muestreos, pasaremos a graficar las 4 tomas de muestras con sus estimadores (color azul), y además con la visualización del valor real de la media (color rojo):
+
+```{r eval=TRUE}
+# Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
+bern_dt <- data.frame(value=main_bernoulli[1:10])
+# Posteriormente creamos el plot que mostraremos en pantalla
+p1 <- ggplot(bern_dt, aes(x=value)) + # Elegimos el dataframe a plotear +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + # Creamos el Histograma
+  geom_vline(aes(xintercept=means[1]),
+            color="blue", linetype="solid", size=1) + # Ploteamos el estimador
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +  # Ploteamos la media real
+  ggtitle("sample size = 10") +
+  theme(plot.title = element_text(hjust = 0.5)) # Creamos el título y su tema
+
+bern_dt <- data.frame(value=main_bernoulli[11:60])
+p2 <- ggplot(bern_dt, aes(x=value)) +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
+  geom_vline(aes(xintercept=means[2]),
+            color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +
+  ggtitle("sample size = 50") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+bern_dt <- data.frame(value=main_bernoulli[61:160])
+p3 <- ggplot(bern_dt, aes(x=value)) +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
+  geom_vline(aes(xintercept=means[3]),
+            color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +
+  ggtitle("sample size = 100") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+bern_dt <- data.frame(value=main_bernoulli[161:1160])
+p4 <- ggplot(bern_dt, aes(x=value)) +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
+  geom_vline(aes(xintercept=means[4]),
+            color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +
+  ggtitle("sample size = 1000") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2, 
+             top = textGrob("Bernoulli Distribution \n n = 5000", 
+                            gp=gpar(fontsize=15)))
+
+```
+
+
+
+#### Parte 2
+
+Utilizando la misma idea de la primera parte, crearemos los datos necesarios para pasar a graficarlos posteriormente:
+
+```{r eval=TRUE}
+
+# Definición de variables o estructuras necesarias para el muestreo.
+prob <- 0.5
+m <- c(10, 50, 100, 1000)
+n_individuos = 5000
+main_bernoulli <- c()
+means <- c()
+
+# Generamos una población que se comporta como Bernoulli(p=0.5)
+bernoulli = rbern(n_individuos, p = prob)
+real_mean = mean(bernoulli)
+
+# Por cada tamaño de muestras
+for(i in m) {
+  # Saco una muestra de tamaño i de la población
+  sampling <- sample(bernoulli, i, replace = FALSE)
+  
+  # Las concateno al vector principal y calculo el estimador
+  main_bernoulli <- append(main_bernoulli, sampling)
+  hat_p = mean(sampling)
+  means <- append(means, hat_p)
+}
+
+```
+
+Ya obtenidos los datos de los muestreos, pasaremos a graficar las 4 tomas de muestras con sus estimadores (color azul), y además con la visualización del valor real de la media (color rojo):
+
+```{r eval=TRUE}
+# Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
+bern_dt <- data.frame(vals=main_bernoulli[1:10])
+# Posteriormente creamos el plot que mostraremos en pantalla
+p1 <- ggplot(bern_dt, aes(x=vals)) + # Elegimos el dataframe a plotear +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + # Creamos el Histograma
+  geom_vline(aes(xintercept=means[1]),
+            color="blue", linetype="solid", size=1) + # Ploteamos el estimador
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +  # Ploteamos la media real
+  ggtitle("sample size = 10") +
+  theme(plot.title = element_text(hjust = 0.5)) # Creamos el título y su tema
+
+bern_dt <- data.frame(vals=main_bernoulli[11:60])
+p2 <- ggplot(bern_dt, aes(x=vals)) +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
+  geom_vline(aes(xintercept=means[2]),
+            color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +
+  ggtitle("sample size = 50") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+bern_dt <- data.frame(vals=main_bernoulli[61:160])
+p3 <- ggplot(bern_dt, aes(x=vals)) +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
+  geom_vline(aes(xintercept=means[3]),
+            color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +
+  ggtitle("sample size = 100") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+bern_dt <- data.frame(vals=main_bernoulli[161:1160])
+p4 <- ggplot(bern_dt, aes(x=vals)) +
+  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
+  geom_vline(aes(xintercept=means[4]),
+            color="blue", linetype="solid", size=1) +
+  geom_vline(aes(xintercept=real_mean),
+            color="red", linetype="solid", size=1) +
+  ggtitle("sample size = 1000") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2, 
+             top = textGrob("Bernoulli Distribution \n n = 5000", 
+                            gp=gpar(fontsize=15)))
+
+```
+
 
 ---
 
@@ -232,7 +401,7 @@ Del gráfico es posible observar que la línea punteada es la media de la poblac
 
 **Respuesta:**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Definimos tamaños de muestreo
 tamano_muestra = 30
 n_muestras = 5000
@@ -240,18 +409,101 @@ n_muestras = 5000
 # Generamos una exponencial para luego generar el subsampling de ella
 exponencial = rexp(10000, rate = 2)
 # Obtenemos la media poblacional de la exponencial
+exp.mean <- mean(exponencial)
+
+# Creamos el data.frame general para poder graficarlo posteriormente:
+confidence <- data.frame(
+  mean = double(),
+  error = double(),
+  group = integer()
+)
 
 # Sampling distribution, calculo del intervalo de confianza y proporción.
-# - En base a la distribución exponencial, generamos multiples sampling 
-# distribution.
-# - Se estima la media del muestreos y obtenemos el intervalo de confianza de 
-# cada una de las muestras
+for (i in 1:n_muestras){
+  # En base a la distribución exponencial, generamos multiples sampling distribution.
+  sampling <- sample(exponencial, tamano_muestra, replace = FALSE)
+  
+  # Se estima la media del muestreos y el error estándar
+  sample.mean <- mean(sampling)
+  sample.sd <- sd(sampling)
+  sample.se <- sample.sd/sqrt(tamano_muestra)
+  
+  # Calculamos el t_score y el margen de error para calcular el intervalo
+  alpha = 0.05
+  t.score = qt(p=alpha/2, df = tamano_muestra - 1, lower.tail=F)
 
-# Plot de Intervalos de confianza (ver respuesta esperada)
-
-# Plot de proporción de Intervalos de confianza
+  margin.error <- t.score * sample.se
+  
+  # Se determina si la media real pertenece al intervalo o no
+  g = "IN"
+  
+  if (exp.mean >= sample.mean - margin.error && exp.mean <= sample.mean + margin.error){
+    # Si la media pertenece al intervalo calculado, es del grupo 0
+    g = "IN" 
+  } else {
+    # Si la media no pertenece al intervalo, es del grupo 1
+    g = "OUT"
+  }
+  
+  # Concatenamos al dataframe de la muestra los datos rescatados en cada
+  # iteración. Este dataframe contendrá toda la información para plotear.
+  z <- data.frame(mean = sample.mean, error = margin.error, group = factor(g))
+  confidence <- rbind(confidence, z)
+}
 
 ```
+
+
+```{r, eval=TRUE}
+# Plot de Intervalos de confianza (ver respuesta esperada)
+
+# Utilizamos el dataframe creado con cada iteración
+plot1 <- ggplot(confidence, aes(mean, c(1:5000), colour = group)) + 
+  geom_point() +  # Creamos un gráfico de puntos
+  xlim(0, 1.5) +  # Añadimos límites mara una visualización comoda
+  scale_color_manual(values=c("#83D7FE", "#FE83BB")) +  # Colores de cada punto
+  # Graficamos con geom_errorbar horizontal el intervalo de confianza por cada
+  # iteración. Este se calcula como la media calculada más-menos el error calculado.
+  geom_errorbarh(aes(xmax = mean + error, xmin = mean - error)) +
+  # Añadimos una recta vertical que indique la media real.
+  geom_vline(aes(xintercept=exp.mean),
+            color="black", linetype="dotted", size=0.5) +
+  # Finalmente añadimos labels y un título.
+  labs(x="Means", y="Iteration") +
+  ggtitle("Intervalos de Confianza \n n = 5000, t = 30") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot1
+
+```
+
+
+Del gráfico anterior podemos observar una clara diferencia en la cantidad de intervalos clasificados como "IN" de color celeste respecto a los "OUT"
+
+```{r, eval=TRUE}
+# Plot de proporción de Intervalos de confianza
+
+# Utilizando el mismo dataframe, crearemos un histograma simple con la cantidad
+# de ocurrecinas de IN y OUT. En este caso el eje x es el grupo
+plot2 <- ggplot(confidence, aes(x = group)) + 
+  # Ponemos los límites verticales como la cantidad de iteraciones.
+  ylim(0, 5000) +
+  # Creamos el histograma con stat count para contar el grupo
+  geom_histogram(stat="count", color="black", fill="white") +
+  # Añadimos un texto en la parte superior de cada barra como el valor contado 
+  # (parámetro ..count..) y lo operamos para que indique el porcentaje real
+  # del grupo sobre la muestra total
+  geom_text(stat= "count", aes(label=(..count.. /n_muestras)*100), vjust=-1, size=3) +
+  # Finalmente añadimos un título acorde.
+  ggtitle("Proporción Intervalos de Confianza en porcentaje \n n = 5000, t = 30") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot2
+
+```
+
+
+
 
 ---
 
