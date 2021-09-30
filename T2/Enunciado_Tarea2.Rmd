@@ -70,15 +70,15 @@ A continuación, se presenta una serie de declaraciones relacionadas con el sesg
 
   1. La Tercera quiere conocer la opinión de la gente sobre una propuesta de ley sobre el matrimonio igualitario. Un reportero del diario sale de la central ubicada en Las Condes y selecciona al azar a 300 personas que pasean por allí, preguntándoles sobre la ley propuesta. ¿Qué podemos decir de este plan de muestreo?.
 
-> Podemos decir que el plan de muestreo presenta un Sesgo de Selección, debido a que es de común conocimiento que existe mayor densidad de personas con pensamientos políticos más conservadores en la comuna de *Las Condes*, por lo que es muy probable que gran parte de los encuestados responderá negativamente a esta propuesta de ley.
+> Podemos decir que el plan de muestreo presenta un Sesgo de Selección, debido a que es de común conocimiento que existe mayor densidad de personas con pensamientos políticos más conservadores en la comuna de *Las Condes*, por lo que es muy probable que gran parte de los encuestados responderá negativamente a esta propuesta de ley. Una forma de solucionar lo anterior sería realizar multiples encuestas en distintas comunas del país y no solamente en *Las Condes*, dando mayor representatividad al resto de la población.
 
   2. Una empresa de telefonía quiere conocer el grado de satisfacción de los propietarios de su nuevo servicio 5g, para ver que tal es la calidad del servicio entregado. Para ello, selecciona al azar 500 números entre todo el conjunto de clientes, colocándose en contacto telefónico con ellos. ¿Qué podemos decir de este plan de muestreo?
 
-> ai no se
+> Este nuevamente es un Sesgo de Selección, debido a que la empresa selecciona al azar entre todo el conjunto de clientes respecto a un producto que seguramente no todos poseen, por lo que no se tendrán respuestas reales respecto al servicio, si no respecto a la imagen que tiene cada cliente. La forma de arreglar este problema es elegir 500 numeros al azar pero del conjunto de clientes que hayan contratado efectivamente el servicio 5g. 
 
   3. Una compañía aérea quiere hacer una encuesta a sus clientes para mejorar su servicio. Durante un mes, envía un correo electrónico a una muestra aleatoria de clientes que hayan volado con la aerolínea el día anterior (ningún cliente será contactado más de una vez). En el correo electrónico se indica que la compañía aérea desea que el cliente rellene una encuesta de 10 minutos para ayudar a la compañía a mejorar su servicio. ¿Qué podemos decir de este plan de muestreo? ¿el sorteo de un producto podría solventar esto?.
   
-> ai tampoco se
+> Este plan de muestreo tiene un sesgo dificil de reconocer, y es el Sesgo de Respuesta Voluntaria. Debido a que la empresa consulta si el cliente quiere realizar la encuesta, lo más probable es que los clientes altamente satisfechos o clientes altamente descepcionados con el servicio aereo sean propensos a responder la encuesta para plazmar sus opiniones. El sorteo de un producto podría solventar esto, ya que llamaría a más clientes que antes del sorteo no estaban interesados en responder la encuesta.
 
 
 #### **Pregunta 2:**
@@ -133,7 +133,7 @@ Suponga que usted ha realizado una `sampling distribution` de dos encuestas dife
 
 Suponiendo que la linea roja en los gráficos representa el valor real del parámetro para cada muestra, comente las características que observa en la evolución del estimador para el `Muestreo 1` y el `Muestreo 2`.
 
-> Respuesta Aquí
+> A medida que aumenta el tamaño de las muestras, es claro que la distribución que toma el Muestreo 1 toma una forma normal en torno al valor real de $\beta$, lo cual nos podría indicar que 
 
 #### **Pregunta 6:**
 Considere que esta trabajando con intervalos de confianza al $95\%$ e intenta estudiar un parámetro $\theta$, ¿porque es incorrecto decir, en la visión frecuentista, que la probabilidad que $\theta$ pertenezca al intervalo es del $95\%$?
@@ -306,13 +306,12 @@ for(i in m) {
   
   # Las concateno al vector principal y calculo el estimador
   main_bernoulli <- append(main_bernoulli, sampling)
-  hat_p = mean(sampling)
+  epsilon = rnorm(n=1, mean=0, sd=1)
+  hat_p = mean(sampling) + epsilon
   means <- append(means, hat_p)
 }
 
 ```
-
-Ya obtenidos los datos de los muestreos, pasaremos a graficar las 4 tomas de muestras con sus estimadores (color azul), y además con la visualización del valor real de la media (color rojo):
 
 ```{r eval=TRUE}
 # Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
