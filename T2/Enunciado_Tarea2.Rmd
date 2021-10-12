@@ -12,6 +12,7 @@ output:
 #### **Integrantes :** 
 
 - Nicolás García Ríos
+- Isidora Ulloa
 
 #### **Cuerpo Docente:**
 
@@ -93,9 +94,9 @@ Explique una buena practica para desarrollar un muestreo, ¿Cree que en una encu
 #### **Pregunta 3:**
 Nombre una ventaja y una desventaja del método de máxima verosimilitud. Justifique cada una de las ventajas y desventajas señaladas.
 
-> Una ventaja notable del método de máxima verosimilitud es que este puede ser utilizado para estimar cualquier parámetro.
+> Una ventaja notable del método de máxima verosimilitud es que es consistente, además de que los estimadores de mazima verosimilitud tienden a una distribución asintótica Gaussiana.
 >
-> Por otro lado, este método depende del tipo de distribución con el cuál distribuyen los datos de la muestra. 
+> La principal desventaja consiste en que su uso depende de la distribución. En la vida real uno puede adivinar la distribución de situaciones familiares (un lanzamiento de monedas será binomial, la entrada y salida de personas será Poisson, etc), pero para casos más exóticos puede ser difícil determinar esto.
 
 #### **Pregunta 4:**
 Considere que recopila $X_{1},...,X_{n} \sim Poisson(\theta)$ donde $\theta$ es un parámetro desconocido. Calcule el estimador de máxima verosimilitud para $\theta$. Considere la siguiente expresión para la Poisson:
@@ -473,26 +474,46 @@ Cabe señalar que el método de máxima verosimilitud deberá ser programado por
 
 ```{r, eval=FALSE}
 # Carga de dataset
-
+body_measurements <- read.csv("Body Measurements _ original.csv")
 # Primera Parte
 # Plot de densidades de la variables TotalHeight
+dens <- density(body_measurements$TotalHeight) # returns the density data
+plot(dens) # plots the results
 
 # Plot de Likelihood
+normal_pdf <- function(mu,sigma,x) {
+  return (1 / (sigma*sqrt(2*pi)) * exp( -1 / 2 * ((x-mu)/sigma)^2 ) )
+}
 # - Generar una función de la likelihood de la normal
+
+likelihood_normal <- function(mu,sigma,xs) {
+  n = length(xs)
+  x_barra = mean(xs)
+  S2 = sum((xs-x_barra)^2)
+           
+  return (1/sigma^2)*exp(-(n*S2/(2*sigma^2)))*exp(-(n*(x_barra-mu)^2/(2*sigma^2)))
+  #return (2*pi*sigma^2)^(-n/2) * exp( (-1/(2*sigma^2)) * (sum( (xs-mu)^2 )))
+  
+  
+}
+
 # - Señalar el rango de valores para observar la solución. Genere un vector con 
 # los valores
+valores = as.vector(body_measurements$TotalHeight)
 
 # Plotear gráfico de calor a través filled.contour()
-ll_plot <- function(a, b) {
+ll_plot <- function(mu, sigma) {
   # Definimos la likelhood
-  
+  xs = valores
+  return (likelihood_normal(mu,sigma,xs))
 }
 
 # Vectorizamos nuestra función para recorrer y estimar los valores
 ll_plot = Vectorize(ll_plot)
 
-mu = ... # definimos secuencia de 20 -> 80 de 0.5 en 0.5.
-sigma = ... # definimos secuencia de 5 -> 23 de 0.5 en 0.5.
+mu = seq(20,80,by=0.5)# definimos secuencia de 20 -> 80 de 0.5 en 0.5.
+sigma = seq(5,23,by=0.5) # definimos secuencia de 5 -> 23 de 0.5 en 0.5.
+
 ll_plot = outer(X=mu, Y=sigma, ll_plot)
 
 # Obtenemos el mapa de calor con los valores mas probables
@@ -500,8 +521,21 @@ filled.contour(x=mu, y=sigma, z=ll_plot, xlab=expression(mu),
                ylab=expression(sigma))
 
 # Plot de comportamiento de SOLO mu al variar la cantidad de datos
+logs_100 = c()
+logs_300= c()
+for (m in mu){
+  logs_100 = append(logs_100,-log(likelihood_normal(m,12,sample(valores,100))))
+}
+for (m in mu){
+  logs_300 = append(logs_300,-log(likelihood_normal(m,12,sample(valores,300))))
+}
+
+plot(mu,logs_100)
+plot(mu,logs_300)
 
 
+plot(replicate(100, mean(sample(valores, 100, rep=F))),type="l", col="blue", xlab="Iteración de Samples", ylab="mu", main="Variación de mu")
+plot(replicate(100, mean(sample(valores, 300, rep=F))),type="l", col="red", xlab="Iteración de Samples", ylab="mu", main="Variación de mu")
 
 # Obtener la solución que minimiza o maximiza la likelihood
 # Producto de como funcionan nlminb es necesario definir un nuevo tipo de función
@@ -510,15 +544,64 @@ likelihood <- function(param) {
   # Definimos los parámetros de entrada de la función
   mu = param[1]
   sigma = param[2]
+  xs = valores
+  n = length(xs) 
+  x_barra = mean(xs)
+  S2 = sum((xs-x_barra)^2)
+           
   # Definimos la likelihood como la suma logaritmica de la función de densidad
+  # return (  (-n/2)*log(2*pi) + (-n/2)*log(sigma^2) - (1/(2*sigma^2))*sum((param[3]-mu)^2)  )
+  # return (2*pi*sigma^2)^(-n/2) * exp( (-1/(2*sigma^2)) * (sum( (xs-mu)^2 )))
+  # return (-log(likelihood_normal(mu,sigma,xs)))
+  
+  return (-n*log(sigma))-(n*S2/(s*sigma^2))-(n*(x_barra-mu)^2/(1*sigma^2))
+  
+}
+likelihood_100 <- function(param) {
+  # Definimos los parámetros de entrada de la función
+  mu = param[1]
+  sigma = param[2]
+  xs = sample(valores,100)
+  n = length(xs) 
+  x_barra = mean(xs)
+  S2 = sum((xs-x_barra)^2)
+           
+  # Definimos la likelihood como la suma logaritmica de la función de densidad
+  # return (  (-n/2)*log(2*pi) + (-n/2)*log(sigma^2) - (1/(2*sigma^2))*sum((param[3]-mu)^2)  )
+  # return (2*pi*sigma^2)^(-n/2) * exp( (-1/(2*sigma^2)) * (sum( (xs-mu)^2 )))
+  # return (-log(likelihood_normal(mu,sigma,xs)))
+  
+  return (-n*log(sigma))-(n*S2/(s*sigma^2))-(n*(x_barra-mu)^2/(1*sigma^2))
+  
+}
+
+likelihood_300 <- function(param) {
+  # Definimos los parámetros de entrada de la función
+  mu = param[1]
+  sigma = param[2]
+  xs = sample(valores,300)
+  n = length(xs) 
+  x_barra = mean(xs)
+  S2 = sum((xs-x_barra)^2)
+           
+  # Definimos la likelihood como la suma logaritmica de la función de densidad
+  # return (  (-n/2)*log(2*pi) + (-n/2)*log(sigma^2) - (1/(2*sigma^2))*sum((param[3]-mu)^2)  )
+  # return (2*pi*sigma^2)^(-n/2) * exp( (-1/(2*sigma^2)) * (sum( (xs-mu)^2 )))
+  # return (-log(likelihood_normal(mu,sigma,xs)))
+  
+  return (-n*log(sigma))-(n*S2/(s*sigma^2))-(n*(x_barra-mu)^2/(1*sigma^2))
   
 }
 
 # Optimizador para encontrar los parametros de la likelihood. Referencia: https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/nlminb
-nlminb(objective=likelihood, start= , lower= , upper= )
+sigma_12= rep(12,length(mu))
+nlminb(objective=likelihood, start=c(mu,sigma_12) , lower=c(45,12) , upper=c(52,12) )
+nlminb(objective=likelihood_100, start=c(mu,12) , lower=45 , upper=52 )
+nlminb(objective=likelihood_300, start=c(mu,12) , lower=45 , upper=52 )
 
 # Segunda Parte
 # Graficar la densidad y obtener el parámetro de la variable propuesta.
+
 ```
 
 ---
@@ -596,6 +679,37 @@ mybootstrap <- function(x, fun, nRuns, size, alpha){
 
 
 ```{r eval=FALSE}
+
+mybootstrap(sat_gpa[10:11], cor , 5000, 125, 0.05)
+
+```
+
+```{r eval=TRUE}
+
+# Utilizado la función de ejemplo de bootstrap visto en clases
+mybootstrap <- function(params, fun, nRuns, size, alpha){
+  values <- vector()
+  samp <- vector()
+  for (i in 1: nRuns){
+    samp.i <- sample_n(params, size=size, replace = T)
+    values[i] <- fun(samp.i)[2]
+  }
+  hist(values,breaks="FD")
+  point.est <- fun(params)
+  se <- sd(values)
+  l.CI <- quantile(values, alpha/2)
+  u.CI <- quantile(values, 1-alpha/2)
+  
+  return(c("Point Estimate" = point.est,
+           "Standart error" = se,
+           "Lower CI Limit" = l.CI,
+           "Upper CI Limit" = u.CI))
+}
+
+```
+
+
+```{r eval=TRUE}
 
 mybootstrap(sat_gpa[10:11], cor , 5000, 125, 0.05)
 
