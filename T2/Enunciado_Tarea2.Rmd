@@ -133,7 +133,10 @@ Suponga que usted ha realizado una `sampling distribution` de dos encuestas dife
 
 Suponiendo que la linea roja en los gráficos representa el valor real del parámetro para cada muestra, comente las características que observa en la evolución del estimador para el `Muestreo 1` y el `Muestreo 2`.
 
-> A medida que aumenta el tamaño de las muestras, es claro que la distribución que toma el Muestreo 1 toma una forma normal en torno al valor real de $\beta$, lo cual nos podría indicar que 
+> El estimador del `Muestreo 1` es claramente consistente, debido a que al ir aumentando el tamaño de la muestra este disminuye su varianza y su media tiende más al valor real.
+>
+> Por otro lado, pese a que el estimador del `Muestreo 2` también disminuye su varianza, tiende a un valor muy distinto al real pero constante en cada iteración. Lo anterior podría indicar que la muestra tiene un sesgo que no depende del tamaño de la muestra, si no a otros parámetros externos como errores metodológicos.
+
 
 #### **Pregunta 6:**
 Considere que esta trabajando con intervalos de confianza al $95\%$ e intenta estudiar un parámetro $\theta$, ¿porque es incorrecto decir, en la visión frecuentista, que la probabilidad que $\theta$ pertenezca al intervalo es del $95\%$?
@@ -149,15 +152,19 @@ Se sabe que al realizar un test de hipótesis es posible equivocarse al tomar un
 En base a los errores señalados, de un ejemplo de cuando es más relevante disminuir las opciones de aceptar $H_0$, si $H_1$ es la correcta.
 
 
-> Respuesta Aquí
+> Cuando estamos estudiando hipótesis relacionadas con la salud de las personas, o dilemas éticos. Por ejemplo:
+>
+> Queremos realizar un test respecto a si un ascensor resiste menos peso de lo que indica el fabricante. Nuestra hipótesis nula sería que el ascensor resiste lo mismo o más de lo que indica el fabricante, mientras que la hipótesis alternativa es que el ascensor resiste menos de lo que se indica.
+>
+> En el caso anterior es necesario reducir el margen de error y las posibilidades de aceptar la hipótesis nula cuando la hipótesis alternativa es la correcta, puesto que entra en juego la integridad de las personas que utilizan los ascensores mencionados.
 
 #### **Pregunta 8:**
 Explique cual es la diferencia entre el test **one-sided** y **two-sided**, de un ejemplo en donde se pueda utilizar **one-sided** y otro donde se pueda utilizar **two-sided**. ¿Es un método mejor que el otro?
 
 
-> La diferencia entre los experimentos **one-sided** y **two-sided** es que en los del primer grupo los sujetos o unidades de experimentación desconocen si es que están siendo sometidos al tratamiento del experimento, mientras que en los experimentos **two-sided** tanto los sujetos como los experimentadores desconocen el cómo se componen los grupos de control y experimentación.
+> La diferencia entre **one-sided** y **two-sided** es que el primer método se utiliza para probar una relación específica con una hipótesis nula (mayor que, menor que), mientras que en el segundo método queremos demostrar una relación de igualdad (mayor o menor, que sea distinto).
 >
-> Un ejemplo de experimento **one-sided** son los experimentos de tipo *A/B Testing*.  
+> Respecto a si un método es mejor que el otro es bastante discutible. El método **one-sided** es menor restrictivo en cuanto a la hipótesis nula, ya que basta que esté dentro del $alpha$% extremo de la hipótesis alternativa para poder demostrarla, mientras que el método **two-sided**, al desconocer la relación exacta respecto al valor de la hipótesis nula, es doblemente exigente que **one-sided** al tener que pertenecer al $alpha/2$% de cualquier extremo para ser aceptada la hipótesis alternativa.
 
 #### **Pregunta 9:**
 
@@ -165,7 +172,7 @@ Explique, con sus palabras, a que se refiere la siguiente afirmación: "Un resul
 
     'Se tienen datos normales de media desconocida. Con los datos, se realiza un test de hipótesis donde la hipótesis nula especifica que la media es cero. Realizando el test, se obtuvo un p-valor de $10^{-10}$, luego producto de este resultado la media necesariamente tiene que ser muy distinta a cero.'
 
-> Respuesta Aquí
+> La afirmación se refiere a que la significancia estadística (como el p-valor, estimador, etc.) no aporta lo mismo en significacia práctica (información útil). En el ejemplo podemos tomar el resultado de significancia estadística como el p-valor de la hipótesis (que en este caso es de $10^{-10}$) pero en la práctica no nos sirve saber con exactitud la probabilidad, ya que basta saber que la probabilidad es baja para poder llegar a otras conclusiones relevantes.
 
 ---
 
@@ -207,10 +214,9 @@ Primero, creaemos los datos necesarios para poder generar los gráficos:
 
 # Definición de variables o estructuras necesarias para el muestreo.
 prob <- 0.5
-m <- c(10, 50, 100, 1000)
+m <- c(1:1000)
 n_individuos = 5000
-main_bernoulli <- c()
-means <- c()
+means <- c(0)
 
 # Generamos una población que se comporta como Bernoulli(p=0.5)
 bernoulli = rbern(n_individuos, p = prob)
@@ -222,7 +228,6 @@ for(i in m) {
   sampling <- sample(bernoulli, i, replace = FALSE)
   
   # Las concateno al vector principal y calculo el estimador
-  main_bernoulli <- append(main_bernoulli, sampling)
   hat_p = mean(sampling)
   means <- append(means, hat_p)
 }
@@ -232,68 +237,38 @@ for(i in m) {
 Ya obtenidos los datos de los muestreos, pasaremos a graficar las 4 tomas de muestras con sus estimadores (color azul), y además con la visualización del valor real de la media (color rojo):
 
 ```{r eval=TRUE}
-# Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
-bern_dt <- data.frame(value=main_bernoulli[1:10])
-# Posteriormente creamos el plot que mostraremos en pantalla
-p1 <- ggplot(bern_dt, aes(x=value)) + # Elegimos el dataframe a plotear +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + # Creamos el Histograma
-  geom_vline(aes(xintercept=means[1]),
-            color="blue", linetype="solid", size=1) + # Ploteamos el estimador
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +  # Ploteamos la media real
-  ggtitle("sample size = 10") +
-  theme(plot.title = element_text(hjust = 0.5)) # Creamos el título y su tema
+p_means <- data.frame(values = means)
 
-bern_dt <- data.frame(value=main_bernoulli[11:60])
-p2 <- ggplot(bern_dt, aes(x=value)) +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
-  geom_vline(aes(xintercept=means[2]),
-            color="blue", linetype="solid", size=1) +
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +
-  ggtitle("sample size = 50") +
+# Gráfico de la convergencia
+graph <- ggplot(p_means, aes(x=c(0:1000), y=values)) + # graficamos el dataframe
+  geom_line() +    # graficamos los datos en forma de línea
+  ylim(0, 1) +     # ponemos límites a los ejes
+  xlim(0, 1000) +  
+  geom_hline(aes(yintercept=0.5),  
+            color="red", linetype="solid", size=1, alpha = 0.4) +
+  xlab("Tamaño Muestra") +  
+  ylab("Estimador") + 
+  ggtitle("Valores del estimador p en función del tamaño de la muestra") + 
   theme(plot.title = element_text(hjust = 0.5))
-
-bern_dt <- data.frame(value=main_bernoulli[61:160])
-p3 <- ggplot(bern_dt, aes(x=value)) +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
-  geom_vline(aes(xintercept=means[3]),
-            color="blue", linetype="solid", size=1) +
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +
-  ggtitle("sample size = 100") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-bern_dt <- data.frame(value=main_bernoulli[161:1160])
-p4 <- ggplot(bern_dt, aes(x=value)) +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
-  geom_vline(aes(xintercept=means[4]),
-            color="blue", linetype="solid", size=1) +
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +
-  ggtitle("sample size = 1000") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2, 
-             top = textGrob("Bernoulli Distribution \n n = 5000", 
-                            gp=gpar(fontsize=15)))
+graph
 
 ```
 
 
+Se puede observar una tendencia clara del valor del estimador hasta el valor real de la media a medida que aumentamos el tamaño de cada muestra, indicandonos que este estimador es consistente.
 
 #### Parte 2
 
 Utilizando la misma idea de la primera parte, crearemos los datos necesarios para pasar a graficarlos posteriormente:
 
+
 ```{r eval=TRUE}
 
 # Definición de variables o estructuras necesarias para el muestreo.
 prob <- 0.5
-m <- c(10, 50, 100, 1000)
+m <- c(1:1000)
 n_individuos = 5000
-main_bernoulli <- c()
-means <- c()
+means <- c(0)
 
 # Generamos una población que se comporta como Bernoulli(p=0.5)
 bernoulli = rbern(n_individuos, p = prob)
@@ -305,63 +280,34 @@ for(i in m) {
   sampling <- sample(bernoulli, i, replace = FALSE)
   
   # Las concateno al vector principal y calculo el estimador
-  main_bernoulli <- append(main_bernoulli, sampling)
-  epsilon = rnorm(n=1, mean=0, sd=1)
-  hat_p = mean(sampling) + epsilon
+  hat_p = mean(sampling) + rnorm(1, mean=0, sd=1)
   means <- append(means, hat_p)
 }
 
 ```
 
+Ya obtenidos los datos de los muestreos, pasaremos a graficar las 4 tomas de muestras con sus estimadores (color azul), y además con la visualización del valor real de la media (color rojo):
+
 ```{r eval=TRUE}
-# Primero creamos un dataframe de los datos aleatorios, con atributo 'vals'
-bern_dt <- data.frame(vals=main_bernoulli[1:10])
-# Posteriormente creamos el plot que mostraremos en pantalla
-p1 <- ggplot(bern_dt, aes(x=vals)) + # Elegimos el dataframe a plotear +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + # Creamos el Histograma
-  geom_vline(aes(xintercept=means[1]),
-            color="blue", linetype="solid", size=1) + # Ploteamos el estimador
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +  # Ploteamos la media real
-  ggtitle("sample size = 10") +
-  theme(plot.title = element_text(hjust = 0.5)) # Creamos el título y su tema
 
-bern_dt <- data.frame(vals=main_bernoulli[11:60])
-p2 <- ggplot(bern_dt, aes(x=vals)) +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
-  geom_vline(aes(xintercept=means[2]),
-            color="blue", linetype="solid", size=1) +
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +
-  ggtitle("sample size = 50") +
+p_means <- data.frame(values = means)
+
+# Gráfico de la convergencia
+graph <- ggplot(p_means, aes(x=c(0:1000), y=values)) + # graficamos el dataframe
+  geom_line() +    # graficamos los datos en forma de línea
+  ylim(-2, 2.5) +     # ponemos límites a los ejes
+  xlim(0, 1000) +  
+  geom_hline(aes(yintercept=0.5),  
+            color="red", linetype="solid", size=1, alpha = 0.4) +
+  xlab("Tamaño Muestra") +  
+  ylab("Estimador") + 
+  ggtitle("Valores del estimador p en función del tamaño de la muestra") + 
   theme(plot.title = element_text(hjust = 0.5))
-
-bern_dt <- data.frame(vals=main_bernoulli[61:160])
-p3 <- ggplot(bern_dt, aes(x=vals)) +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
-  geom_vline(aes(xintercept=means[3]),
-            color="blue", linetype="solid", size=1) +
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +
-  ggtitle("sample size = 100") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-bern_dt <- data.frame(vals=main_bernoulli[161:1160])
-p4 <- ggplot(bern_dt, aes(x=vals)) +
-  geom_histogram(aes(y=..count..), colour="black", fill="white") + 
-  geom_vline(aes(xintercept=means[4]),
-            color="blue", linetype="solid", size=1) +
-  geom_vline(aes(xintercept=real_mean),
-            color="red", linetype="solid", size=1) +
-  ggtitle("sample size = 1000") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-grid.arrange(p1, p2, p3, p4, ncol=2, nrow=2, 
-             top = textGrob("Bernoulli Distribution \n n = 5000", 
-                            gp=gpar(fontsize=15)))
+graph
 
 ```
 
+A diferencia del caso anterior, el valor del estimador varía significativamente y de forma aleatoria por cada iteración. Debido a que este no pareciera converger a ningún valor real, y su variabilidad incluye incluso valores fuera de los valores posibles de la distribución, este no es un estimador consistente.
 
 ---
 
@@ -404,6 +350,7 @@ Del gráfico es posible observar que la línea punteada es la media de la poblac
 # Definimos tamaños de muestreo
 tamano_muestra = 30
 n_muestras = 5000
+c_in = 0
 
 # Generamos una exponencial para luego generar el subsampling de ella
 exponencial = rexp(10000, rate = 2)
@@ -414,7 +361,8 @@ exp.mean <- mean(exponencial)
 confidence <- data.frame(
   mean = double(),
   error = double(),
-  group = integer()
+  group = integer(),
+  acum_prob = double() # Lo utilizaremos para plotear las proporciones
 )
 
 # Sampling distribution, calculo del intervalo de confianza y proporción.
@@ -439,6 +387,7 @@ for (i in 1:n_muestras){
   if (exp.mean >= sample.mean - margin.error && exp.mean <= sample.mean + margin.error){
     # Si la media pertenece al intervalo calculado, es del grupo 0
     g = "IN" 
+    c_in = c_in + 1
   } else {
     # Si la media no pertenece al intervalo, es del grupo 1
     g = "OUT"
@@ -446,7 +395,8 @@ for (i in 1:n_muestras){
   
   # Concatenamos al dataframe de la muestra los datos rescatados en cada
   # iteración. Este dataframe contendrá toda la información para plotear.
-  z <- data.frame(mean = sample.mean, error = margin.error, group = factor(g))
+  z <- data.frame(mean = sample.mean, error = margin.error, group = factor(g), 
+                  acum_prob = c_in/i)
   confidence <- rbind(confidence, z)
 }
 
@@ -477,32 +427,30 @@ plot1
 ```
 
 
-Del gráfico anterior podemos observar una clara diferencia en la cantidad de intervalos clasificados como "IN" de color celeste respecto a los "OUT"
+Del gráfico anterior podemos observar una clara diferencia en la cantidad de intervalos clasificados como "IN" de color celeste respecto a los "OUT", pero la proporción de los datos es incierta debido a la cantidad de datos graficados en este plot, y no es posible observar algún tipo de incertudumbre en particular.
+
 
 ```{r, eval=TRUE}
 # Plot de proporción de Intervalos de confianza
+proportion <- data.frame(values = confidence$acum_prob)
 
-# Utilizando el mismo dataframe, crearemos un histograma simple con la cantidad
-# de ocurrecinas de IN y OUT. En este caso el eje x es el grupo
-plot2 <- ggplot(confidence, aes(x = group)) + 
-  # Ponemos los límites verticales como la cantidad de iteraciones.
-  ylim(0, 5000) +
-  # Creamos el histograma con stat count para contar el grupo
-  geom_histogram(stat="count", color="black", fill="white") +
-  # Añadimos un texto en la parte superior de cada barra como el valor contado 
-  # (parámetro ..count..) y lo operamos para que indique el porcentaje real
-  # del grupo sobre la muestra total
-  geom_text(stat= "count", aes(label=(..count.. /n_muestras)*100), vjust=-1, size=3) +
-  # Finalmente añadimos un título acorde.
-  ggtitle("Proporción Intervalos de Confianza en porcentaje \n n = 5000, t = 30") +
+# Gráfico de la convergencia
+graph <- ggplot(proportion, aes(x=c(1:5000), y=values)) + # graficamos el dataframe
+  geom_line() +    # graficamos los datos en forma de línea
+  ylim(0.8, 1) +     # ponemos límites a los ejes
+  xlim(1, 5000) +  
+  geom_hline(aes(yintercept=0.95),  
+            color="red", linetype="solid", size=1, alpha = 0.4) +
+  xlab("Iteración") +  
+  ylab("Proporción Acumulada") + 
+  ggtitle("Proporción de intervalos clasificados como 'IN' por iteración") + 
   theme(plot.title = element_text(hjust = 0.5))
-
-plot2
+graph
 
 ```
 
 
-
+Ya graficada la proporción por cada iteración, es claro que existe algún tipo de incertudumbre que afecta al valor esperado. Podemos observar que al aumentar la cantidad de iteraciones este no converge al valor teórico, si no que a un estimado de 92.5%, indicando que existe algún tipo de incertidumbre que podría depender del tipo de distribución o del tamaño de cada muestra tomada.
 
 ---
 
