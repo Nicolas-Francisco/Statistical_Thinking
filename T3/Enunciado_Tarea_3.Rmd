@@ -180,6 +180,7 @@ library(plotly)
 
 # Manipulación de varios plots en una imagen.
 library(gridExtra)
+library(grid)
 ```
 
 
@@ -305,43 +306,37 @@ power.z.test <- function(n1=NULL, sigma1=0.5,
   
   if(!is.null(n2)){
     # Cálculo de power dado un sample
-    Z = qnorm(1-alfa/2)
+    Z = qnorm(1-alfa)
     
     denominador1 = sigma1/sqrt(n1)
     denominador2 = sigma2/sqrt(n2)
-    X_bar1 = Z*denominador1 + mu.Ha
-    X_bar1_neg = -Z*denominador1 + mu.Ha
-    X_bar2 = Z*denominador2 + mu.True
-    X_bar = X_bar1 - X_bar2
-    
-    numerador = X_bar - (mu.Ha - mu.True)
     denominador = sqrt(denominador2^2 + denominador1^2)
-    Z = numerador/denominador
+    X_bar = Z*(denominador)
+    
+    Z = (X_bar - mu.Ha)/denominador
     Power = 1 - pnorm(Z)
     
     # Se calculan los límites gráficos de power, 
-    min_lim = min(rnorm(1000, mean=mu.Ha, sd=denominador1)) - 
-      round(min(rnorm(1000, mean=mu.Ha, sd=denominador1)))%%10
-    max_lim = max(rnorm(1000, mean=mu.True, sd=denominador2)) +
-      round(max(rnorm(1000, mean=mu.True, sd=denominador2)))%%10
+    min_lim = min(rnorm(1000, mean=0, sd=denominador)) - 
+      round(min(rnorm(1000, mean=0, sd=denominador)))%%10
+    max_lim = max(rnorm(1000, mean=mu.Ha, sd=denominador)) +
+      round(max(rnorm(1000, mean=mu.Ha, sd=denominador)))%%10
       
     # Ploteo del power del test de hipotesis.
     # En rojo queda la distribución del test de hipótesis, mientras que en azul la distribución 2
     # Además, el área llenada en rojo es la visualización del power.
     plot <- ggplot(data.frame(x = c(min_lim, max_lim)), aes(x)) + 
-      stat_function(fun = dnorm, args = list(mean = mu.Ha, sd = denominador1), 
+      stat_function(fun = dnorm, args = list(mean = 0, sd = denominador), 
                     col='red') +
-      stat_function(fun = dnorm, args = list(mean = mu.True, sd = denominador2), 
+      stat_function(fun = dnorm, args = list(mean = mu.Ha, sd = denominador), 
                     col='blue') +
-      stat_function(fun = dnorm, args = list(mean = mu.True, sd = denominador2), 
-                    xlim = c(X_bar1, max_lim), geom = "area", fill='red') + 
-      geom_vline(xintercept = X_bar1, linetype="dotted", size=1) +
-      geom_vline(xintercept = X_bar1_neg, linetype="dotted", size=1) +
-      annotate(x=X_bar1, y=+Inf,label="alpha/2", vjust=2, geom="label") +
-      annotate(x=X_bar1_neg, y=+Inf,label="-alpha/2", vjust=2, geom="label") +
+      stat_function(fun = dnorm, args = list(mean = mu.Ha, sd = denominador), 
+                    xlim = c(X_bar, max_lim), geom = "area", fill='red') + 
+      geom_vline(xintercept = X_bar, linetype="dotted", size=1) +
+      annotate(x=X_bar, y=+Inf,label="alpha", vjust=2, geom="label") +
       theme_minimal() +
-      ggtitle("H0 vs Ha") +
-      xlab(expression(bar(X))) + ylab("Density")
+      ggtitle(paste("H0 vs Ha, with alpha = ", alfa, sep = "")) +
+      xlab("Means Difference") + ylab("Density")
     }
   
   # Como R no permite retornar dos salidas usamos una lista
@@ -357,8 +352,8 @@ Para esto crearemos una función que genere los datos que necesitamos para los p
 # Función que entrega un dataframe de los power calculados para distintos
 # valores del mu real. Este calcula el power para 20 valores de mu que van
 # desde 0 a 2 desviaciones estándar del test de hipótesis
-powers_realmu <- function(n1=NULL, sigma1=0.5, 
-                   mu.Ha=0, mu.True=0, alfa=0.05){
+powers_realmu <- function(n1=NULL, sigma1=0.5,
+                          mu.Ha=0, mu.True=0, alfa=0.05){
   
   # Creo el dataframe con z y su power respectivo
   plots <- data.frame(z = double(),
@@ -409,6 +404,7 @@ for (i in c(0.05, 0.01, 0.1)){
 plot <- ggplot(vals, aes(x=z, y=power, color=alpha)) + 
   geom_line() +
   geom_point() +
+  ylim(0, 1) +
   xlab("Real mu values") +  
   ylab("Power") + 
   ggtitle("Power of the t Test \n n = 16, sigma = 16, mu = 100") + 
@@ -424,14 +420,27 @@ Además de lo anterior es fácil ver que las tres curvas son identicas, pero tra
 #### Experimento 2:
 Dado que ahora estamos en el caso two sample, podemos utilizar la misma función power.z.test para poder conseguir los datos necesarios:
 
-
 ```{r, eval=TRUE}
 
-# REVISAR EL VALOR DEL POWER PORQUE PARECE QUE ESTÁ MALO.
-p <- power.z.test(n1=50, sigma1=20, n2=50, sigma2=20, mu.Ha=100, mu.True = 110, alfa=0.05)
-p
+p1 <- power.z.test(n1=50, sigma1=20, n2=50, sigma2=20, mu.Ha=10, 
+                  mu.True=10, alfa=0.025)[[1]]
+p2 <- power.z.test(n1=50, sigma1=20, n2=50, sigma2=20, mu.Ha=10, 
+                  mu.True=10, alfa=0.05)[[1]]
+p3 <- power.z.test(n1=50, sigma1=20, n2=50, sigma2=20, mu.Ha=10, 
+                  mu.True=10, alfa=0.1)[[1]]
+p4 <- power.z.test(n1=50, sigma1=20, n2=50, sigma2=20, mu.Ha=10, 
+                  mu.True=10, alfa=0.2)[[1]]
+
+grid.arrange(p1, p2, p3, p4,
+             # Numero de filas y columnas en los que los queremos sortear
+             ncol=2, nrow=2,
+             # Títulos
+             top = textGrob("Two Sample test with different alpha values \n n1=50, sigma1=20, n2=50, sigma2=20, \n mu1-mu2=10, x1-x2=10", 
+                            gp=gpar(fontsize=15)))
 ```
 
+
+Claramente al variar el alfa cambiamos también la restricción de rechazar la hiótesis nula. A menor alpha, menor es la probabilidad de rechazar la hipótesis nula y por ende también es menor su power, y por otro lado al aumentar el valor de alpha este acerca el límite del alfa y aumenta la probabilidad de rechazar la hipótesis nula, lo cuál aumenta su power.
 
 ---
 
@@ -484,7 +493,7 @@ $$\sigma_{PhD} = 20615$$
 
 **Respuesta:**
 
-```{r}
+```{r, eval=FALSE}
 df = read.csv('marketing_campaign.csv', sep='\t')
 
 # Implementación de Z-test one-sided y two-sided
@@ -571,7 +580,7 @@ $$\mathbb{P}(\text{obtener al menos resultado significativo por azar})=1-(1-\alp
 - [ ] Ejecute el siguiente código que calcula el $p$-valor usual y el $p$-valor asociado a Bonferroni (que corresponde al $p$-valor * m donde $m$ es el numero de experimentos), ¿Cuantos valores que originalmente se hubieran aceptado fueron rechazados si $\alpha = 0.05$? ¿Que implica esto sobre el nivel de falsos negativos de este metodo?
 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 data <- read.csv("ratones.csv",sep= ";", stringsAsFactors = T)
 head(data)
 ```
@@ -627,14 +636,120 @@ b) Estudie si el modelo multivariable posee mejor desempeño que el modelo simpl
 
 **Nota:** No esta permitido utilizar comandos que obtengan los valores solicitados directamente a menos que se le permita en la pregunta.
 
-```{r}
-lm_reg <- function(X, Y){
-  
-  
-}
+**Respuesta**
+
+#### Parte I
+Primero, leemos la tabla
+```{r, eval=TRUE}
+data <- read.csv("insurance.csv", stringsAsFactors = T)
+head(data)
 ```
 
 
+Separaremos el dataframe en dos, donde uno representa los fumadores y el otro los no fumadore, y calculamos la correlación entre las variables por cada grupo para determinar la variable que mejor se relacione con charges.
+```{r eval=TRUE}
+# Calculo de la matriz de correlacion para su visualización
+smokers <- data[data$smoker == "yes",]
+non_smokers <- data[data$smoker == "no",]
+correlation_smokers = cor(smokers[c(1,3,4,7)])
+correlation_non_smokers = cor(non_smokers[c(1,3,4,7)])
+
+print("smokers:")
+round(correlation_smokers, 3)
+print("non smokers:")
+round(correlation_non_smokers, 3)
+
+```
+Podemos ver claramente que dependiendo de si se es fumador o no, la variable numérica que mejor representa a cada grupo es distinta. En el caso de los fumadores la mejor métrica es el bmi, mientras que en el caso de los no fumadores es la edad.
+
+Ahora, creamos una función que calcule la regresión lineal simple dados dos vectores. Con X la variable independiente e Y la variable de respuesta:
+```{r, eval=TRUE}
+lm_reg <- function(X, Y){
+  X_bar = mean(X)
+  Y_bar = mean(Y)
+  num = 0
+  den = 0
+  for (i in 1:length(X)){
+    num = num + (X[i]-X_bar)*(Y[i]-Y_bar)
+    den = den + (X[i]-X_bar)^2
+  }
+  
+  b1 = num/den
+  b0 = Y_bar - b1*X_bar
+  
+  y_gorro = c()
+  for (i in 1:length(X)){
+    y_gorro = c(y_gorro, (X[i]*b1 + b0))
+  }
+  
+  R2 = cor(Y, y_gorro)
+  adjusted_R2 = (1 - ((1-R2)*(length(X)-1))/(length(X)-2))
+  return(list(b0, b1, R2, adjusted_R2))
+}
+```
+
+Ahora, crearemos dos listas de resultados con ambos datasets, el de fumadores y el de no fumadores
+```{r, eval=TRUE}
+lm_smokers <- lm_reg(smokers$bmi, smokers$charges)
+lm_non_smokers <- lm_reg(non_smokers$age, non_smokers$charges)
+```
+
+```{r, eval=TRUE}
+print(paste("smokers: R2=", lm_smokers[[3]], " adjusted_R2=", lm_smokers[[4]]))
+print(paste("non smokers: R2=", lm_non_smokers[[3]], " adjusted_R2=", lm_non_smokers[[4]]))
+
+```
+
+```{r, eval=TRUE}
+plot <- ggplot(smokers, aes(x=bmi, y=charges)) + 
+  geom_point() +
+  geom_abline(intercept = lm_smokers[[1]], slope = lm_smokers[[2]], color="red") +
+  xlab("BMI") +  
+  ylab("Charges") + 
+  ggtitle("Simple Linear Regression for Smokers\nCharges vs BMI") + 
+  theme(plot.title = element_text(hjust = 0.5))
+plot
+```
+
+```{r, eval=TRUE}
+plot <- ggplot(non_smokers, aes(x=age, y=charges)) + 
+  geom_point() +
+  geom_abline(intercept = lm_non_smokers[[1]], slope = lm_non_smokers[[2]], color="blue") +
+  xlab("Ages") +  
+  ylab("Charges") + 
+  ggtitle("Simple Linear Regression for Non Smokers\nCharges vs Age") + 
+  theme(plot.title = element_text(hjust = 0.5))
+plot
+```
+
+
+#### Parte II
+Para esta parte basta crear una nueva funcion de regresión lineal pero con dos variables. Ahora X e Y son las variables independientes y la variable Z la variable de respuesta:
+```{r, eval=TRUE}
+lm_reg <- function(X, Y, Z){
+  X_bar = mean(X)
+  Y_bar = mean(Y)
+  Z_bar = mean(Z)
+  num = 0
+  den = 0
+  for (i in 1:length(X)){
+    num = num + (X[i]-X_bar)*(Y[i]-Y_bar)
+    den = den + (X[i]-X_bar)^2
+  }
+  
+  b1 = num/den
+  b0 = Y_bar - b1*X_bar
+  
+  y_gorro = c()
+  for (i in 1:length(X)){
+    y_gorro = c(y_gorro, (X[i]*b1 + b0))
+  }
+  
+  R2 = cor(Y, y_gorro)
+  adjusted_R2 = (1 - ((1-R2)*(length(X)-1))/(length(X)-2))
+  return(list(b0, b1, R2, adjusted_R2))
+}
+```
 
 &nbsp;
 <hr />
