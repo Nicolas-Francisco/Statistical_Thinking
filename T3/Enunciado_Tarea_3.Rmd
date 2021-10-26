@@ -80,7 +80,7 @@ Determine si las siguientes regresiones son lineales para los parámetros $\beta
 >
 > Pero como la ecuación es de grado cúbico, tenemos que esta es una regresión polinomial de grado 3, no lineal.
 > 
-> c): Esta no es lineal porque es logaritmo de algo y eso no es lineal.
+> c): Esta no es lineal, ya que sus parámetros están dentro de una función logarítmica y por ende no lineal.
 
 
 #### **Pregunta 2:**
@@ -100,14 +100,14 @@ $$\hat{N°\_de\_fanaticos\_del\_anime}=300+90*numero\_de\_semestres$$
 #### **Pregunta 3:**
 Considere un test con dos muestras **no** aparejado, explique porque se hace una corrección a los grados de libertad en el test de Welsh.
 
-> Respuesta Aquí
+> Se una corrección con el fin de incorporar al problema la diferencia entre los tamaños y las varianzas de las muestras, con el fin de penalizar estas diferencias. Así tenemos que con menor grados de libertad se tiene una mayor incertidumbre.
 
 
 #### **Pregunta 4:**
 
 Al realizar una regresión lineal simple con una variable categórica $(\beta_{0} + \beta_{1} \cdot \text{categorica})$  ¿que interpretación puede obtenerse del coeficiente que acompaña a la variable categórica?
 
-> Para variables categóricas tendremos que $\beta_{0}$ es la media para el caso $\text{categorica}=0$, lo que implica que $\beta_{1}$ es la correción del modelo para $\text{categorica}=1$ en base a la media para $\text{categorica}=0$. 
+> Estamos trabajando cun una variable dummy, lo cual para variables categóricas tendremos que $\beta_{0}$ es la media para el caso $\text{categorica}=0$, lo que implica que $\beta_{1}$ es la correción del modelo para $\text{categorica}=1$, tomando como base a la media para $\text{categorica}=0$. En otras palabras, la constante es el promedio para una de las variables categoricas, y la pendiente la diferencia entre las medias de estas.
 
 #### **Pregunta 5:**
 Discuta la siguiente frase:
@@ -116,20 +116,20 @@ Discuta la siguiente frase:
 Hacer una regresión lineal mediante máxima verosimilitud requiere tener ciertas hipótesis probabilisticas de los datos, mientras que una regresión realizada mediante mínimos cuadrados no necesita tener ninguna hipótesis probabilista.
 "
 
-> ai no c
+> Trabajar con un modelo basado en mínimos cuadrados solo necesita optimizar una función de predicción y reducir los errores, pero para trabajar con una regresión lineal mediante máxima verosimilitud es necesario tener una hipótesis o tener conocimiento respecto al comportamiento probabilístico de los datos. En otras palabras, utilizar máxima verosimilitud exige un conocimiento previo del comportamiento, mientras que mínimos cuadrados no.
 
 #### **Pregunta 6:**
 
 Explique porque el test de significancia sobre los parámetros de una regresión lineal se realiza bajo la hipótesis nula $\beta_{H_{0}}=0$.
 
-> ???
+> Esto es así debido a que este mide el grado de independencia de los parámetros de la regresión lineal (cuando $\beta_{H_{0}}=0$, estos son independientes entre sí), así, lo que se busca es encontrar evidencia que permita descartar la hipótesis nula que asume independencia entre los parámetros y poder llegar a una relación lineal.
 
 
 #### **Pregunta 7:**
 
 ¿Que nos dice la equivalencia de la máxima verosimilitud sobre los parámetros que componen una regresión lineal? ¿Qué nos permitirían calcular?
 
-> ??? v2
+> Nos dice que utilizar estimación de máxima verósimilitud sobre los parámetros de una regresión lineal es en realidad lo mismo que utilizar el modelo de mínimos cuadrádos, ya que parten de las mismas suposiciones iniciales (como comportamiento normal, u homocedasticidad), y llegan a la misma optimización. Esto nos permite calcular un modelo de regresión lineal ajustada en base a errores cuadráticos.
 
 
 ### **Pregunta 8**
@@ -143,21 +143,21 @@ Explique en que se diferencia con mínimos cuadrados, de una posible ventaja y d
 
 > Esta se diferencia con SSE en el factor cuadrático del error, por lo que esta optimización es menos estricta con los errores a diferencia de los minimos cuadrádos que "penaliza" de mayor manera a los valores con mayor error, al aumentar cuadráticamente su valor.
 >
-> Una ventaja de este modelo puede ser su computabilidad. A mayor cantidad de datos el modelo cuadrático podría demorarse mucho más al tener que calcular el cuadrado de cada error en vez de trabajar con ellos directamente.
+> Una ventaja de este modelo puede ser su computabilidad y robustez ante outliers. A mayor cantidad de datos el modelo cuadrático podría demorarse mucho más al tener que calcular el cuadrado de cada error en vez de trabajar con ellos directamente, y a demás, al no penalizar valores extremos evitamos que estos afecten gravemente al modelo.
 >
-> Por otro lado, una desventaja podría ser su menor restricción. Utilizar SSE hace que el modelo tenga que minimizar la cantidad de "errores grandes", por lo que es dificil tener grandes errores en un modelo de regresión. Esto por su puesto no ocurre con este nuevo cálculo, ya que en vez de minimizar la cantidad de errores grandes, este minimizaría los errores sin importar que tan distintos sean del valor original.
+> Por otro lado, una desventaja podría ser su menor restricción. Utilizar SSE hace que el modelo tenga que minimizar la cantidad de "errores grandes", por lo que es dificil tener grandes margenes de errores en un modelo de regresión. Esto por su puesto no ocurre con este nuevo modelo, ya que en vez de minimizar la cantidad de errores grandes, este minimizaría los errores sin importar que tan distintos sean del valor original, lo cuál afectaría al modelo si es que este no contiene outliers.
 
 #### **Pregunta 9:**
 Explique porque el coeficiente $R^2$ tiende a crecer con el numero de variables.
 
-> Respuesta Aqui
-
+> Esto sucede porque a medida que aumenta la cantidad de variables en el conjunto de datos, el modelo reducirá naturalmente el error cuadrático con el fin de ajustar lo más posible el modelo con los datos, lo que se traduce en un aumento de la variable R2. 
 
 #### **Pregunta 10**
 
 Un estudio de cáncer realizado por la institución X ha señalado que las personas que beben café poseen mayores probabilidades de padecer algún cáncer pulmonar.  El estudio causo un gran revuelo en la población, por lo que una segunda institución ha decidido replicar el experimento, llegando a la conclusión que las personas que toman café tienden a fumar cigarrillos mientras beben esta bebida. Señale que tipo de variable serían los fumadores de cigarrillos en el estudio de cáncer pulmonar y explique cual es la característica de estas variables.
 
-> Respuesta Aquí
+> Los fumadores de cigarrillos son claramente una variable de confusión. Estas variables hacen que dos variables mutuamente relacionadas entre sí sean confundidas por causalidad en vez de correlación, y debido a que estas están muy ligadas entre ellas, se hace difícil observar la relación real.
+
 
 ---
 
@@ -167,7 +167,7 @@ En la siguiente sección deberá resolver cada uno de los experimentos computaci
 
 Para el desarrollo preste mucha atención en los enunciados, ya que se le solicitará la implementación de métodos sin uso de funciones predefinidas. Por otro lado, Las librerías permitidas para desarrollar de la tarea 2 son las siguientes:
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Manipulación de estructuras
 library(tidyverse)
 library(dplyr)
@@ -203,7 +203,7 @@ Donde $\bar x$ es la media de la muestra, $\mu$ es la media de la población, $\
 
 Por otro lado, se utiliza Two-Sample cuando queremos comparar la media de dos muestras. El Z-score de Two-Sample se define con la ecuación:
 
-$$Z-score_{Two-Sample} = \dfrac{(\bar x_2 - \bar x_1) - (\mu_1 - \mu_2)}{\dfrac{\sigma_1}{\sqrt n_1}+\dfrac{\sigma_2}{\sqrt n_2}}$$	
+$$Z-score_{Two-Sample} = \dfrac{(\bar x_1 - \bar x_2) - (\mu_1 - \mu_2)}{\sqrt{\dfrac{\sigma_1^{2}}{n_1} + \dfrac{\sigma_2^{2}}{ n_2}} }$$	
 Donde $(\bar x_2 - \bar x_1)$ es la diferencia de las medias de la muestra, $(\mu_1 - \mu_2)$ la diferencia de las medias de la población, $\sigma_{1,2}$ la desviación estándar de la población y $n_{1,2}$ el tamaño de las muestras.
 
 ## Multiples Test
@@ -255,8 +255,6 @@ $$ n1=16, sigma1=16, mu.Ha=100 , mu.True= Variar, alfa=0.1 $$
 
 Se le recomienda que la variación se realice a través de un `for` y grafique las curvas dentro de un mismo gráfico para observar potenciales diferencias entre ellas.
 
--	Diseñe un experimento one-sample y visualice cómo se comportan las distribuciones normales de la hipótesis nula y la hipótesis alternativa al variar $\alpha$.
-
 -	Diseñe un experimento Two-sample y visualice cómo se comportan las distribuciones normales de la hipótesis nula y la hipótesis alternativa al variar $\alpha$.
 
 Para el diseño de experimentos y/o comprobación de sus métodos puede serles útiles (no hay problema si decide utilizar los mismos ejemplos):
@@ -265,14 +263,14 @@ Para el diseño de experimentos y/o comprobación de sus métodos puede serles �
 - Two-Sample: [Simple Power Calculation for Two-Sample Z Test](https://ytliu0.github.io/Stat_Med/power2.html)
 
 **Respuesta**
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Power Function, El esqueleto posee como ejemplo como obtener la potencia de un z-test one-sample.
 # Si utiliza este esqueleto deberá comentar la función que cumple cada una de las partes entregadas
 power.z.test <- function(n1=NULL, sigma1=0.5, 
-                         n2=NULL,sigma2=0.5, mu.Ha=0 , 
-                         mu.True=0, alfa=0.05){
-  if(){
-    # 
+                         n2=NULL, sigma2=0.5, 
+                         mu.Ha=0, mu.True=0, alfa=0.05){
+  if(is.null(n2)){
+    # Cálculo de power dado un sample
     Z = qnorm(1-alfa)
     
     denominador = sigma1/sqrt(n1)
@@ -282,13 +280,15 @@ power.z.test <- function(n1=NULL, sigma1=0.5,
     Z = numerador/denominador
     Power = 1 - pnorm(Z)
     
-    # 
+    # Se calculan los límites gráficos de power, 
     min_lim = min(rnorm(1000, mean=mu.Ha, sd=denominador)) - 
       round(min(rnorm(1000, mean=mu.Ha, sd=denominador)))%%10
     max_lim = max(rnorm(1000, mean=mu.True, sd=denominador)) +
       round(max(rnorm(1000, mean=mu.True, sd=denominador)))%%10
       
-    # 
+    # Ploteo del power del test de hipotesis.
+    # En rojo queda la distribución del test de hipótesis, mientras que en azul la distribución real.
+    # Además, el área llenada en rojo es la visualización del power.
     plot <- ggplot(data.frame(x = c(min_lim, max_lim)), aes(x)) + 
       stat_function(fun = dnorm, args = list(mean = mu.Ha, sd = denominador), 
                     col='red') +
@@ -302,31 +302,136 @@ power.z.test <- function(n1=NULL, sigma1=0.5,
       ggtitle("H0 vs Ha") +
       xlab(expression(bar(X))) + ylab("Density")
     }
-  }
   
-  if(){
-    #
+  if(!is.null(n2)){
+    # Cálculo de power dado un sample
+    Z = qnorm(1-alfa/2)
     
-    # 
-    if(plot.hypothesis){
+    denominador1 = sigma1/sqrt(n1)
+    denominador2 = sigma2/sqrt(n2)
+    X_bar1 = Z*denominador1 + mu.Ha
+    X_bar1_neg = -Z*denominador1 + mu.Ha
+    X_bar2 = Z*denominador2 + mu.True
+    X_bar = X_bar1 - X_bar2
+    
+    numerador = X_bar - (mu.Ha - mu.True)
+    denominador = sqrt(denominador2^2 + denominador1^2)
+    Z = numerador/denominador
+    Power = 1 - pnorm(Z)
+    
+    # Se calculan los límites gráficos de power, 
+    min_lim = min(rnorm(1000, mean=mu.Ha, sd=denominador1)) - 
+      round(min(rnorm(1000, mean=mu.Ha, sd=denominador1)))%%10
+    max_lim = max(rnorm(1000, mean=mu.True, sd=denominador2)) +
+      round(max(rnorm(1000, mean=mu.True, sd=denominador2)))%%10
       
-      # 
-      
-      # 
-      plot = ...
+    # Ploteo del power del test de hipotesis.
+    # En rojo queda la distribución del test de hipótesis, mientras que en azul la distribución 2
+    # Además, el área llenada en rojo es la visualización del power.
+    plot <- ggplot(data.frame(x = c(min_lim, max_lim)), aes(x)) + 
+      stat_function(fun = dnorm, args = list(mean = mu.Ha, sd = denominador1), 
+                    col='red') +
+      stat_function(fun = dnorm, args = list(mean = mu.True, sd = denominador2), 
+                    col='blue') +
+      stat_function(fun = dnorm, args = list(mean = mu.True, sd = denominador2), 
+                    xlim = c(X_bar1, max_lim), geom = "area", fill='red') + 
+      geom_vline(xintercept = X_bar1, linetype="dotted", size=1) +
+      geom_vline(xintercept = X_bar1_neg, linetype="dotted", size=1) +
+      annotate(x=X_bar1, y=+Inf,label="alpha/2", vjust=2, geom="label") +
+      annotate(x=X_bar1_neg, y=+Inf,label="-alpha/2", vjust=2, geom="label") +
+      theme_minimal() +
+      ggtitle("H0 vs Ha") +
+      xlab(expression(bar(X))) + ylab("Density")
     }
-  }
   
   # Como R no permite retornar dos salidas usamos una lista
   # Los resultados se llaman con $plot o $power
   return(list(plot=plot,power=Power))
 }
-
-
-# Plot de gráfico de potencia
-
-# Experimentos
 ```
+
+
+#### Experimento 1:
+Para esto crearemos una función que genere los datos que necesitamos para los praficos.
+```{r, eval=TRUE}
+# Función que entrega un dataframe de los power calculados para distintos
+# valores del mu real. Este calcula el power para 20 valores de mu que van
+# desde 0 a 2 desviaciones estándar del test de hipótesis
+powers_realmu <- function(n1=NULL, sigma1=0.5, 
+                   mu.Ha=0, mu.True=0, alfa=0.05){
+  
+  # Creo el dataframe con z y su power respectivo
+  plots <- data.frame(z = double(),
+                      power = double()) 
+  # Creo un vector de los valores del experimento y de los valores de x
+  experiments = c()
+  x_vals = c()
+  step = sigma1*2/20
+  
+  # Por cada step
+  for (i in 0:20) {
+    # Calculo el valor de la media real según el step
+    val = mu.Ha + step*i
+    experiments <- append(experiments, val)
+    x_vals = append(x_vals, i/10)
+  }
+  
+  # Por cada valor de mu
+  for (value in experiments){
+    # Calculo el power utilizando los valores de mu
+    p <- power.z.test(n1, sigma1, NULL, 0, mu.Ha, value, alfa)
+    z <- data.frame(z = value, powers = p[2])
+    # Lo guardo en el dataframe
+    plots <- rbind(plots, z)
+  }
+  # Guardo tambien los valores de los steps
+  plots$x = x_vals
+  return(plots)
+}
+
+```
+
+Ahora basta realizar un for para los alphas sugeridos, guardar estos datos dentro del mismo dataframe y finalmente plotearlos de a cuerdo a su alpha como se muestra a continuación: 
+```{r, eval=TRUE}
+# Creo un dataframe para guardar los experimentos
+vals <- data.frame(x = double(),
+                   z = double(),
+                   power = double(),
+                   alpha = factor()) 
+
+# Por cada valor de alpha, utilizo la función para variar el mu real
+for (i in c(0.05, 0.01, 0.1)){
+  sample <- powers_realmu(n1=16, sigma1=16, mu.Ha=100, mu.True=value, alfa=i)
+  sample$alpha = factor(i)
+  vals <- rbind(vals, sample)
+}
+
+plot <- ggplot(vals, aes(x=z, y=power, color=alpha)) + 
+  geom_line() +
+  geom_point() +
+  xlab("Real mu values") +  
+  ylab("Power") + 
+  ggtitle("Power of the t Test \n n = 16, sigma = 16, mu = 100") + 
+  theme(plot.title = element_text(hjust = 0.5))
+plot
+```
+
+Notemos que al variar el valor de alpha las tres curvas comienzan en tres valores distintos. Esto se debe a que cuando la media real es idéntica a la del test de hipótesis estas se solapan perfectamente, por lo que el valor inicial cuando Real.mu = Ha.mu es el valor probabilístico de alpha en una distribución normal (1% en verde, 5% en rojo y 10% en azul). 
+
+Además de lo anterior es fácil ver que las tres curvas son identicas, pero trasladadas en el eje x dependiendo del valor inicial. Al "partir" de un alpha mayor, la probabilidad acumulada de rechazar el test de hipótesis aumenta más rápido que en el caso contrario, lo cuál se debe a la forma de la distribución normal y al grado de aumento de esta a medida que se mueve el mu real. En otras palabras, estamos en momentos distintos de la curva dependiendo del alpha.
+
+
+#### Experimento 2:
+Dado que ahora estamos en el caso two sample, podemos utilizar la misma función power.z.test para poder conseguir los datos necesarios:
+
+
+```{r, eval=TRUE}
+
+# REVISAR EL VALOR DEL POWER PORQUE PARECE QUE ESTÁ MALO.
+p <- power.z.test(n1=50, sigma1=20, n2=50, sigma2=20, mu.Ha=100, mu.True = 110, alfa=0.05)
+p
+```
+
 
 ---
 
