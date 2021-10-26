@@ -726,30 +726,99 @@ plot
 #### Parte II
 Para esta parte basta crear una nueva funcion de regresión lineal pero con dos variables. Ahora X e Y son las variables independientes y la variable Z la variable de respuesta:
 ```{r, eval=TRUE}
-lm_reg <- function(X, Y, Z){
-  X_bar = mean(X)
-  Y_bar = mean(Y)
+lm_reg2 <- function(X1, X2, Z){
+  X1_bar = mean(X1)
+  X2_bar = mean(X2)
   Z_bar = mean(Z)
-  num = 0
-  den = 0
-  for (i in 1:length(X)){
-    num = num + (X[i]-X_bar)*(Y[i]-Y_bar)
-    den = den + (X[i]-X_bar)^2
+  sum_x22 = 0
+  sum_x12 = 0
+  sum_x1x2 = 0
+  sum_x1z = 0
+  sum_x2z = 0
+  for (i in 1:length(X1)){
+    sum_x22 = sum_x22 + (X2[i]-X2_bar)^2
+    sum_x12 = sum_x12 + (X1[i]-X1_bar)^2
+    sum_x1x2 = sum_x1x2 + (X1[i]-X1_bar)*(X2[i]-X2_bar)
+    sum_x1z = sum_x1z + (X1[i]-X1_bar)*(Z[i]-Z_bar)
+    sum_x2z = sum_x2z + (X2[i]-X2_bar)*(Z[i]-Z_bar)
   }
   
-  b1 = num/den
-  b0 = Y_bar - b1*X_bar
+  b1 = (sum_x22*sum_x1z - sum_x1x2*sum_x2z)/(sum_x12*sum_x22 - sum_x1x2^2)
+  b2 = (sum_x12*sum_x2z - sum_x1x2*sum_x1z)/(sum_x12*sum_x22 - sum_x1x2^2)
+  a = Z_bar - b1*X1_bar - b2*X2_bar
   
-  y_gorro = c()
-  for (i in 1:length(X)){
-    y_gorro = c(y_gorro, (X[i]*b1 + b0))
+  z_gorro = c()
+  for (i in 1:length(X1)){
+    z_gorro = c(z_gorro, (a + b1*X1[i] + b2*X2[i]))
   }
   
-  R2 = cor(Y, y_gorro)
-  adjusted_R2 = (1 - ((1-R2)*(length(X)-1))/(length(X)-2))
-  return(list(b0, b1, R2, adjusted_R2))
+  R2 = cor(Z, z_gorro)
+  adjusted_R2 = (1 - ((1-R2)*(length(X1)-1))/(length(X1)-3))
+  return(list(a, b1, b2, R2, adjusted_R2))
 }
 ```
+
+Ahora calculando nuevamente la regresión para los casos de fumador y no fumador, pero con las dos correlaciones más grandes de cada uno tendremos:
+```{r, eval=TRUE}
+lm_smokers2 <- lm_reg2(smokers$bmi, smokers$age, smokers$charges)
+lm_non_smokers2 <- lm_reg2(non_smokers$age, non_smokers$children, non_smokers$charges)
+```
+
+```{r, eval=TRUE}
+print(paste("smokers: R2=", lm_smokers2[[4]], " adjusted_R2=", lm_smokers2[[5]]))
+print(paste("non smokers: R2=", lm_non_smokers2[[4]], " adjusted_R2=", lm_non_smokers2[[5]]))
+
+```
+
+Ya viendo únicamente estos valores de R2 y R2 ajustados tenemos que la regresión efectivamente tiene mejor desempeño que utilizando una única variable independiente
+
+```{r, eval=TRUE}
+linear_s <- lm(smokers$charges ~ smokers$bmi + smokers$age)
+linear_ns <- lm(non_smokers$charges ~ non_smokers$age + non_smokers$children)
+summary(linear_s)
+summary(linear_ns)
+
+```
+
+
+
+```{r, eval=TRUE}
+### Calculate z on a grid of x-y values
+x1.seq <- seq(min(smokers$bmi),max(smokers$bmi),length.out=25)
+x2.seq <- seq(min(smokers$age),max(smokers$age),length.out=25)
+z <- t(outer(x1.seq, x2.seq, function(x,y) lm_smokers2[[1]] + lm_smokers2[[2]]*x + lm_smokers2[[3]]*y))
+
+#### Draw the plane with "plot_ly" and add points with "add_trace"
+p <- plot_ly(x=~x1.seq, y=~x2.seq, z=~z, colors = c("#f5cb11", "#cf2525"), opacity=0.5, type="surface") %>%
+  add_trace(x=smokers$bmi, y=smokers$age, z=smokers$charges, mode="markers", type="scatter3d",
+  marker = list(opacity=0.7, symbol=105, color="#f03c3c")) %>%
+  layout(title = 'Regression Plane for smokers', scene = list(
+    aspectmode = "manual",
+    xaxis = list(title = "bmi"),
+    yaxis = list(title = "age"),
+    zaxis = list(title = "charge")))
+p
+```
+
+```{r, eval=TRUE}
+### Calculate z on a grid of x-y values
+x1.seq <- seq(min(non_smokers$age),max(non_smokers$age),length.out=25)
+x2.seq <- seq(min(non_smokers$children),max(non_smokers$children),length.out=25)
+z <- t(outer(x1.seq, x2.seq, function(x,y) lm_non_smokers[[1]] + lm_non_smokers[[2]]*x + lm_non_smokers[[3]]*y))
+
+#### Draw the plane with "plot_ly" and add points with "add_trace"
+p2 <- plot_ly(x=~x1.seq, y=~x2.seq, z=~z, colors = c("#a6ffb0", "#4237db"), opacity=0.5, type="surface") %>%
+  add_trace(x=non_smokers$age, y=non_smokers$children, z=non_smokers$charges, mode="markers", type="scatter3d",
+  marker = list(opacity=0.7, symbol=105, color="#110ec2")) %>%
+  layout(title = 'Regression Plane for non smokers', scene = list(
+    aspectmode = "manual",
+    xaxis = list(title = "age"),
+    yaxis = list(title = "children"),
+    zaxis = list(title = "charge")))
+p2
+```
+
+
 
 &nbsp;
 <hr />
