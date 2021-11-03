@@ -587,25 +587,90 @@ head(data)
 
 **Respuesta Aquí:**
 
-```{r}
+```{r, eval=TRUE}
 
-probEmpirica <- function(alpha,m){
-  n <- 10000 # Cantidad de veces que se va a repetir el experimento para estimar la probabilidad, pueden cambiar este valor si lo desean
-  
-
-  res <-... #Resultados de los experimentos
-  
-  # Puede agergar todo el codigo que estime conveniente para calcular la probabilidad empirica
-  ...
-  ...
-  #
-  prob <-... # Probabilidad empirica
-  
+probEmpirica <- function(alpha, m){
+  n <- 1000 # Cantidad de veces que se va a repetir el experimento
+  res <- rbinom(n, m, alpha)
+  prob <- length(which(res>0)) / n
   return(prob)
-  
 }
 
 ```
+
+
+Con nuestra función lista, podemos pasar a generar los datos necesarios para distintos valores de m:
+
+```{r eval=TRUE}
+
+probs <- data.frame(
+  m = integer(),
+  prob = double(),
+  type = integer())
+
+prob <- 0.05
+m <- c(1:100)
+
+# Por cada tamaño de muestras
+for(i in m) {
+  e <- probEmpirica(prob, i)
+  t <- 1-(1-prob)^i
+  z1 <- data.frame(m=i, prob=e, type=factor("Empirical"))
+  z2 <- data.frame(m=i, prob=t, type=factor("Theorical"))
+  probs <- rbind(probs, z1)
+  probs <- rbind(probs, z2)
+}
+
+```
+
+
+#### Correccion de Bonferroni:
+
+Aquí solo debemos modificar la probabilidad de cada iteración de alpha a alpha/m con m el número de iteraciones.
+
+```{r eval=TRUE}
+
+prob <- 0.05
+m <- c(1:100)
+
+# Por cada tamaño de muestras
+for(i in m) {
+  e <- probEmpirica(prob/i, i)
+  t <- 1-(1-prob/i)^i
+  z1 <- data.frame(m=i, prob=e, type=factor("Empirical B."))
+  z2 <- data.frame(m=i, prob=t, type=factor("Theorical B."))
+  probs <- rbind(probs, z1)
+  probs <- rbind(probs, z2)
+}
+
+```
+
+Ya obtenidos todos los valores, utilizando las probabilidades con y sin la corrección de bonferroni, podemos graficarlos como sigue:
+
+```{r eval=TRUE}
+
+# Generamos el gráfico con los resultados
+g <- ggplot(probs, aes(m, prob)) +
+  geom_line(aes(colour=type)) +
+  ylim(0, 1) +     
+  xlim(0, 100) + 
+  xlab("m") +  
+  ylab("Probabilidad") + 
+  ggtitle("Probabilidad teorica y empirica de multiples tests\ncon y sin la corrección de Bonferroni\nalpha = 0.05") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+g
+
+```
+
+Claramente los valores epmíricos y teóricos son muy similares (donde los empíricos presentan ruido dentro de un margen de error). Sin mebargo, entre los valores con y sin la corrección de Bonferroni tenemos una clara diferencia de valores, donde los que tienen la corrección se mantienen constantes al rededor del valor 0.05, y los que no tienen la corrección son crecientes y alcanzan su máximo con un valor aprocimado de m=80.
+
+Lo anterior nos indica que a mayor cantidad de tests múltiples, mayor es el error probabilístico contenido, y que este crece muy rápidamente a medida que la cantidad de tests aumenta. Con la correción de Bonferroni podemos asegurar que los errores de este tipo (falsos positivos) se mantengan estables al rededor del valor de alpha. 
+
+Claramente la forma de la probabilidad acumulada depende del valor de alpha, ya que a mayor alpha más rápido crecerá la curva sin la corrección de Bonferroni, y a su vez, el valor al que se estabiliza la probabilidad utilizando la corrección es mayor.
+
+En cuanto a si este método es útil, la respuesta es que depende del tipo de test de hipótesis. Si queremos que el error no aumente cuando estamos trabajando con errores de tipo I, entonces este método sí funciona ya que mantenemos constante la probabilidad de valores significativos, y por ende, tenemos menor error. Sin embargo, si queremos disminuir la probabilidad de valores significativos en caso de errores de tipo II (falsos negativos), entonces esta corrección es inválida, ya que tiene el efecto inverso.
+
 
 ---
 
@@ -770,7 +835,7 @@ print(paste("non smokers: R2=", lm_non_smokers2[[4]], " adjusted_R2=", lm_non_sm
 
 ```
 
-Ya viendo únicamente estos valores de R2 y R2 ajustados tenemos que la regresión efectivamente tiene mejor desempeño que utilizando una única variable independiente
+Ya viendo únicamente estos valores de R2 y R2 ajustados tenemos que la regresión efectivamente tiene mejor desempeño que utilizando una única variable independiente. Esta mejora es más significativa en el caso de la tabla de fumadores (6-7 puntos de mejora), mientras que para los no-fumadores esta mejora en el desempeño no es tan grande (1-2 puntos). Esto podría indicar que la edad y la variable añadida "children" no aporta mayor información en el caso de los datos de personas no fumadoras, mientras que en el caso de los fumadores podemos concluir que la variable bmi y la edad si pueden describir de buena manera el comportamiento de los datos.
 
 ```{r, eval=TRUE}
 linear_s <- lm(smokers$charges ~ smokers$bmi + smokers$age)
@@ -780,7 +845,7 @@ summary(linear_ns)
 
 ```
 
-
+Ya comparandolo con el modelo generado por R, podemos ver que nuestra modelo si tiene un comportamiento similar y significativo. Además, podemos utilizar las herramientas que nos entrega R para modelar los datos de cada dataset, y la regresión calculada en forma de plano:
 
 ```{r, eval=TRUE}
 ### Calculate z on a grid of x-y values
