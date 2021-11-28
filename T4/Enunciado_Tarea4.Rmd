@@ -92,7 +92,7 @@ Explique la diferencia entre **prior probability** y **posterior probability**
 
 El estadista bayesiano "Bruno Finetti" menciona la siguiente frase en su libro de probabilidad:  **La probabilidad no existe**. Lo que en verdad quizo decir es que la probabilidad es un método para describir incertidumbre en un observador con conocimiento limitado. Discuta esta información utilizando el ejemplo del lanzamiento del globo terraqueo visto en clases. ¿Que significa decir "la probabilidad de que sea agua es 0.7"?
 
-> La frase mencionada funciona bien y se entiende en el mundo frecuentista, ya que se refiere a que un parámetro desconocido en un principio tiene un valor exacto y real, que en este caso es la proporción Agua-Tierra en el planeta. Pero esto no es así en el mundo Bayesiano, ya que el parámetro es una variable aleatoria por sí sola, por lo cuál este contiene cierto margen de error e incertidumbre. 
+> La frase mencionada funciona bien y se entiende en el mundo frecuentista, ya que se refiere a que un parámetro desconocido en un principio tiene un valor exacto y real, que en este caso es la proporción Agua-Tierra en el planeta. Pero esto no es así en el mundo Bayesiano, ya que el parámetro es una variable aleatoria por sí sola, por lo cuál este contiene cierto margen de error e incertidumbre imposibles de reducir a 0.
 
 
 #### **Pregunta 5:**
@@ -125,7 +125,7 @@ b. Cuales son las limitaciones de la *grid approximation*.
 
 ¿ Por qué es necesario aprender a trabajar con muestras de la posterior?.
 
-> idk
+> Porque así podemos modelar correctamente la distribución de valores posibles que hayan generado los datos, y ajustar el modelo a lo esperado. Por ejemplo, si no trabajamos correctamente con las muestras de la posterior, podríamos obtener una distribución que no contenga el valor real como parte de los valores más probables, lo que invalida la credibilidad y calidad del modelo.
 
 
 #### **Pregunta 8:**
@@ -139,7 +139,7 @@ Señale si las siguientes afirmaciones son verdaderas o falsas, en el caso que s
 
 > Falso. Cuando la posterior distribuye de forma normal, los point estimates son una forma alternativa de resumir los valores más relevantes como la moda o mediana. Sin embargo, estos no son tan útiles como los intervalos de confianza, pero no significa que no entreguen información relevante.
 >
-> Falso. La descripción indicada corresponde a un intervalo de confianza en el mundo frecuentista.
+> Falso. La descripción indicada corresponde a un intervalo de confianza en el mundo Frecuentista, no Bayesiano. Los intervalos de credibilidad no se refieren  a la probabilidad de contener el valor real, si no que representa la creencia de valores que puede tomar el estadístico muestral.
 >
 > Verdadero.
 
@@ -160,7 +160,7 @@ Suponga que usted esta intentando determinar la especie de un panda que que tien
 Se administra el test y se obtiene un resultado positivo a la especie $1$. Sin utilizar la información en $D$ calcule la probabilidad posterior de que su panda sea de la especie $1$. Repita sus cálculos utilizando la información recopilada en $D$. ¿En que varían sus resultados?
 
 
-> Respuesta Aqui
+> Idk
 
 
 ---
@@ -655,7 +655,7 @@ data_notas <- read.csv("notas.csv")
 
 # Función para crear likelihood dado mu y sigma
 grid_function <- function(mu, sigma){
-  likelihood <- dnorm(1, mean = mu, sd = sigma^2)
+  likelihood <- prod(dnorm(data_notas$Notas, mean = mu, sd = sigma))
   return(likelihood)
 }
 
@@ -701,8 +701,8 @@ data_grid$posterior <- (data_grid$posterior - min(data_grid$posterior))/(max(dat
 # Punto de referencia
 # Se recomienda cambiar estos valores por unos adecuados que le permitan estudiar
 # Los valores de la distribución de mejor manera
-valor_x <- 1
-valor_y <- 1
+valor_x <- 2
+valor_y <- 2
 
 # Grafico
 
@@ -736,7 +736,7 @@ plt
 - [ ] A continuación se presenta un código que permite realizara la distribución dada por sampling from grid approximation ¿Para que sirve este proceso? ¿Que puede deducir del gráfico?
 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Codificamos los datos
 x <- 1:length(data_grid$posterior)
 
@@ -753,7 +753,7 @@ df <- data.frame(posterior_samples$grid_mu,posterior_samples$grid_sigma)
 dens(df)
 ```
 
-> Respuesta Aqui
+> Idk uwu.
 
 
 &nbsp;
