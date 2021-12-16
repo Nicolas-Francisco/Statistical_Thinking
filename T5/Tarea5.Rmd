@@ -1,0 +1,646 @@
+---
+title: "Tarea 5"
+output:
+  html_document:
+    df_print: paged
+---
+
+![](banner.png)
+
+<center> <h1>Tarea 5: Bayesian Inference Part II</h1> </center>
+<center><strong>CC6104: Statistical Thinking</strong></center>
+#### **Integrantes :** 
+
+- Nicolás García Ríos
+- Ricardo Valdivia Orellana
+
+#### **Cuerpo Docente:**
+
+- Profesor: Felipe Bravo M.
+- Auxiliar: Sebastian Bustos e Ignacio Meza D.
+            
+
+#### **Fecha límite de entrega:**
+
+### **Índice:**
+
+1. [Objetivo](#id1)
+2. [Instrucciones](#id2)
+3. [Referencias](#id3)
+2. [Primera Parte: Preguntas Teóricas](#id4)
+3. [Segunda Parte: Elaboración de Código](#id5)
+
+### **Objetivo**<a name="id1"></a>
+
+Bienvenid@s a la uuuuultima tarea del curso Statistical Thinking. Esta tarea tiene como objetivo evaluar los contenidos teóricos de la ultima parte del curso, los cuales se enfocan principalmente en aplicar inferencia bayesiana para generar regresiones lineales y estudiar métodos de obtención de la posterior mas poderosos, como es MCMC. Si aún no han visto las clases, se recomienda visitar los enlaces de las referencias.
+
+La tarea consta de una parte teórica que busca evaluar conceptos vistos en clases. Seguido por una parte práctica con el fin de introducirlos a la programación en R enfocada en el análisis estadístico de datos. 
+
+### **Instrucciones:**<a name="id2"></a>
+
+- La tarea se realiza en grupos de **máximo 2 personas**. Pero no existe problema si usted desea hacerla de forma individual.
+- La entrega es a través de u-cursos a más tardar el día estipulado en la misma plataforma. A las tareas atrasadas se les descontará un punto por día.
+- El formato de entrega es este mismo **Rmarkdown** y un **html** con la tarea desarrollada. Por favor compruebe que todas las celdas han sido ejecutadas en el archivo html.
+- Al momento de la revisión tu código será ejecutado. Por favor verifica que tu entrega no tenga errores de compilación.
+- No serán revisadas tareas desarrolladas en Python.
+- Está **PROHIBIDO** la copia o compartir las respuestas entre integrantes de diferentes grupos.
+- Pueden realizar consultas de la tarea a través de U-cursos y/o del canal de Discord del curso. 
+
+
+### **Referencias:**<a name="id3"></a>
+
+Slides de las clases:
+
+- [Bayesian Linear Regression](https://github.com/dccuchile/CC6104/blob/master/slides/3_3_ST-bayes_lin.pdf)
+- [Markov Chain Monte Carlo](https://github.com/dccuchile/CC6104/blob/master/slides/3_4_ST-MCMC.pdf)
+- [Model Evaluation and Information Criteria](https://github.com/dccuchile/CC6104/blob/master/slides/4_1_ST-eval.pdf)
+- [Directed Graphical Models](https://github.com/dccuchile/CC6104/blob/master/slides/4_2_ST-dag.pdf)
+
+
+Videos de las clases:
+
+- Bayesian Linear Regression: [video 1](https://youtu.be/DrwhRshBVjM), [video 2](https://youtu.be/lgNMDCzTV9k),  [video 3](https://youtu.be/ajMucPrZDpU), [video 4](https://youtu.be/YSGWWSUMPOk), [video 5](https://youtu.be/Ma9V8Nown9Q)
+- Markov Chain Monte Carlo: [video 1](https://youtu.be/gsofPiPBIeU), [video 2](https://youtu.be/EJZWaph61p4),  [video 3](https://youtu.be/jfidS22imJM), [video 4](https://youtu.be/kif9EG-sy2I), [video 5](https://youtu.be/iVgiowZvyZM), [video 6](https://youtu.be/r0BNqctisLg)
+- Model Evaluation and Information Criteria: [video 1](https://youtu.be/HCCzwltLVCc), [video 2](https://youtu.be/twpZHZMmKgM),  [video 3](https://youtu.be/ny4SlO3rcTo), [video 4](https://youtu.be/6U7laePWt9M), [video 5](https://youtu.be/vE2VaK9tLV8), [video 6](https://youtu.be/wmBugs36H-4)  
+- Directed Graphical Models: [video 1](https://youtu.be/2jnj-7xpK0E), [video 2](https://youtu.be/GZf8uB37noU),  [video 3](https://youtu.be/3EDdNLOrj_4), [video 4](https://youtu.be/cODS9GgepA4), [video 5](https://youtu.be/JA8H-LjAatE), [video 6](https://youtu.be/YXf0wnzvCFM)   
+
+Documentación:
+
+- [rethinking](https://github.com/rmcelreath/rethinking)
+- [tidyr](https://tidyr.tidyverse.org)
+- [purrr](https://purrr.tidyverse.org)
+- [dplyr](https://dplyr.tidyverse.org)
+- [ggplot2](https://ggplot2.tidyverse.org/)
+
+# Primera Parte: Preguntas Teóricas<a name="id4"></a>
+A continuación, se presentaran diferentes preguntas que abordan las temáticas vistas en clases. Por favor responda cada una de estas preguntas de forma breve, no más de 4 o 5 lineas.
+
+#### **Pregunta 1:**
+
+Señale algunos beneficios (no mas de dos) que nos brinda realizar una regresión lineal bayesiana sobre una regresión ajustada por mínimos cuadrados.
+
+> Un beneficio de utilizar regresión linear bayesiana sobre una regresión ajustada por mínimos cuadrados es el uso de información a priori de la distribución de los datos. Esto se debe a que, al generar el modelo estadístico que compone la visión Bayesiana, podemos suponer priors basados en información previa o lógica de la distribución que toman los datos, ya sea evitar valores negativos o asumir el comportamiento normal de un parámetro.
+>
+> Otro beneficio de la regresión lineal es que al tener distribuciones del posterior por cada parámetro que compone la regresión, no solo podemos graficar un modelo lineal único, si no que podemos calcular un área de confianza e incertidubre que nos hablen aún más del comportamiento de los datos.
+
+
+#### **Pregunta 2:**
+
+A continuación se presenta un modelo de regresión lineal bayesiana:
+
+$$y_i \sim Normal(\mu, \sigma)$$
+$$\mu = \beta_0 + \beta_1*x$$
+$$\beta_0 \sim Normal(10,2)$$
+$$\beta_1 \sim Normal(0,1)$$
+$$\sigma \sim Uniform(0,50)$$
+
+En base al modelo presentado, responda las siguientes preguntas:
+
+- [ ] Describa que representa cada una de las lineas del modelo.
+
+- [ ] Señale los parámetros que conforman a la regresión lineal. 
+
+- [ ] Que objetivo cumple en el modelo lineal tener una distribución $Normal(0,1)$ en el parámetro $\beta_1$.
+
+- [ ] Que propiedad de las regresiones lineales nos entrega $sigma$.
+
+**Respuesta:**
+
+> La primera línea corresponde al likelihood de la variable objetivo, el cuál tiene un comportamiento normal dependiente de la media y de la desviación estándar.
+>
+> La segunda línea corresponde al modelo lineal que queremos representar, con beta_0 el intercepto del modelo con x=0 y beta_1 la pendiente o velocidad de crecimiento de los datos.
+>
+> La tercera línea corresponde al Prior del parámetro beta_0, el cual se asume tiene un comportamiento normal en torno al valor 10. Notar además que se asume indirectamente que los valores menores a 6 y mayores a 14 son muy poco probables.
+>
+> La cuarta línea correspone al Prior del segundo parámetro beta, el cuál también tiene un comportamiento normal pero en torno al valor 0. Esta suposición sobre el parámetro se conoce como *Parámetro Regularizado*, ya que evita overfitting de los datos.
+>
+> La última línea corresponde al prior de la desviación estándar. Este prohibe valores negativos al tener solo posibilidad de valores entre 0 y 50.
+
+#### **Pregunta 3:**
+
+Explique de forma resumida como funciona el algoritmo de Laplace approximation utilizado para la regresión lineal. Señale el porque existe la necesidad de aplicar este modelo y los supuestos que se realizan con este método.
+
+**Respuesta:**
+
+> El algoritmo de Laplace asume que la `joint posterior` es una distribución Gausiana Multivariada. Obtiene las medias de los parametros del `posterior` utilizando tecnicas de optimización numerica. 
+> Luego obtiene Sigma de la segunda derivada del `posterior`.algoritmo
+>
+> Es necesario utilizar este algoritmo al realizar regresión lineal Bayesiana, debido a que la técnica de grid approximation no es escalable a gran cantidad de datos, ni tampoco a altas complejidades de cálculo como los son las integrales y derivadas.
+> Este algoritmo nos permite ajustar modelos de mayor cantidad de datos en menor tiempo.
+
+#### **Pregunta 4:**
+Determine si las siguientes afirmaciones son verdaderas o falsas. Justifique las falsas.
+
+- [ ] El algoritmo de metropolis hasting solo funciona si la probabilidad de saltar de B a A es la misma que de A a B.
+- [ ] El algoritmo de Gibbs funciona en cualquier caso.
+- [ ] El algoritmo de metropolis hasting y de Gibbs son el mismo algoritmo, pero este ultimo es una variante del primero.
+
+> Falso. El algoritmo de metropolis permite proposiciones asimétricas (i.e $q(\theta)^{(a)} | \theta^{(b)}) \noq  q(\theta)^{(b)} | \theta^{(a)})$)
+> 
+> Falso. Hay casos en los que no se quiere usar `conjugate priors` y además se vuelve ineficiente para modelos complejos que tienen una gran cantidad de parametros.
+> 
+> Verdadero.
+
+#### **Pregunta 5:**
+
+El algoritmo de Gibbs es mas eficiente que el de metropolis hasting. ¿Como se logra este efecto? ¿Existe alguna limitante de esta estrategia?
+
+> Esto se debe a que reduce su aleatoriedad y utilizando todo el conocimiento que se tiene de la distribución objetivo, además es sabido que una de las mejoras del algoritmo de Gibbs se ajusta de manera inteligente dependiendo de los valores de los parametros.
+> Las limitantes son los casos en los que no se quiere utilizar `conjugate priors` y la ineficiencia que tiene frente a muchos parametros.
+
+
+#### **Pregunta 6:**
+
+De una ventaja y una desventaja del algoritmo HMC.
+
+> Una ventaja del algoritmo HMC es que este es mucho más eficiente que el de Metropolis o Gibbs, permitiendo que este algoritmo no requiera de samples más grandes para poder describir la distribución de la posterior.
+>
+> Una limitante sin embargo es que HMC es que este debe estar bien sintonizado y ajustado dependiendo del modelo de datos con el que estamos trabajando, por lo que pierde cierta generalidad.
+
+#### **Pregunta 7:**
+
+Nombre y explique dos propiedades que son deseables en una cadena de Markov.
+
+> 1. Carencia de memoria, lo que significa que la distribución de probabilidad del valor futuro de una Variabla Aleatoria, solo depende de su valor actual, siendo independiente de los valores hisotoricos de la variable.
+> 2. Se define en un espacio finito de estados posibles, esto puesto que es un proceso estocástico discreto en la probabilidad de que ocurra un evento.
+
+#### **Pregunta 8:**
+Explique cómo cross-validation, criterios de información y regularización ayudan a mitigar o medir los problemas de underfitting y overfitting.
+
+> Las primeras dos ayudan a estimar la `out-of-sample deviance` de un modelo de datos, y la tercera mejora este valor, el cual es un valor que permite medir, si un modelo, esta corrigiendo el Underfitting y Overfitting.
+1. cross-validation, este metodo utiliza trozos de datos (`folds`) que le permiten, obtener un estimado del `out-of-sample deviance`,
+2. criterios de información, utiliza una formula bastante simple para estimar,  $AIC = D_{train} + 2p$
+3. Regularization, realiza una restriccion al parametro $\beta$, y corrige el overffiting utilizando un parametrp $\lambda$, el cual ajusta con una particion independiente
+   de los datos la cual es llamada, `validation set`
+
+
+#### **Pregunta 9:**
+
+Diseñe una DAG para un problema causal inventado por usted de al menos 5 nodos (puede basarse en el ejemplo de Eugene Charniak) usando **Dagitty**  y considere que la DAG tenga al menos: una chain, un fork y un collider. Muestre con dagitty todas las independencias condicionales de su DAG. Explique las independencias usando las reglas de d-separación.
+
+```{r}
+library(dagitty)
+
+dag <- dagitty('dag {
+"Aprobar el Curso" [pos="-1.452,0.093"]
+"Buen Estado Animico" [pos="-1.282,-0.421"]
+"Buena nota en Examen" [pos="-1.485,-0.410"]
+"Dormir Bien" [pos="-1.353,-0.767"]
+"Estudiar para Examen" [pos="-1.564,-0.751"]
+"Buena nota en Examen" -> "Aprobar el Curso"
+"Dormir Bien" -> "Buen Estado Animico"
+"Dormir Bien" -> "Buena nota en Examen"
+"Estudiar para Examen" -> "Buena nota en Examen"
+}')
+
+plot(dag)
+
+impliedConditionalIndependencies(dag)
+
+
+dseparated(dag,"Aprobar el Curso", "Dormir Bien", c("Buena nota en Examen"))
+# Esta condicion puesto que si sabemos que tiene una buena nota en el examen, aprobar el curso
+# ya no ""depende"" de Dormir Bien
+
+dseparated(dag,"Aprobar el Curso", "Estudiar para Examen", c("Buena nota en Examen"))
+# Al igual que en el caso anterior, pasan a ser dseparadas cuando se tiene en conocimiento la nota del examen
+
+
+
+dconnected(dag,"Aprobar el Curso", "Dormir Bien", c())
+dconnected(dag,"Aprobar el Curso", "Estudiar para Examen", c())
+# En ambos casos ahora aprobar el curso, pasa a depender de dormir bien o estudiar, si ya no tenemos conocimiendo de 
+# la buena nota en el examen
+
+dseparated(dag,"Aprobar el Curso", "Dormir Bien", c("Buena nota en Examen"))
+
+dseparated(dag, "Buen Estado Animico", "Estudiar para Examen", c())
+dseparated(dag, "Dormir Bien", "Estudiar para Examen", c())
+# Estas variables son independientes de estudiar para examen, esto viene dado por que son dseparadas
+
+dseparated(dag, "Aprobar el Curso", "Buen Estado Animico", c("Dormir Bien"))
+dseparated(dag, "Aprobar el Curso", "Buen Estado Animico", c("Buena nota en Examen"))
+# Cuando se conoce que se durmio bien, es posible decir que que aprobar el curso es independiente al estado animico
+# en caso contrario, existe cierta dependencia, puesto que si se tiene un buen estado animico, aumentan las probabilidades
+# de que se haya dormido bien de manera que se aumentan las probabilidades de aprobar el curso,
+# lo mismo sucede de manera transitiva cuando no se tiene que se obtuvo buena nota en el examen,
+# puesto que aprobar el curso podria ser debido a que o se durmio bien o se estudio, por lo que 
+# eso podria "causar" un mejor estado animico.
+```
+---
+
+
+
+# Segunda Parte: Elaboración de Código<a name="id5"></a>
+En la siguiente sección deberá resolver cada uno de los experimentos computacionales a través de la programación en R. Para esto se le aconseja que cree funciones en R, ya que le facilitará la ejecución de gran parte de lo solicitado.
+
+Para el desarrollo preste mucha atención en los enunciados, ya que se le solicitará la implementación de métodos sin uso de funciones predefinidas. Por otro lado, Las librerías permitidas para desarrollar de la tarea 4 son las siguientes:
+
+```{r, eval=TRUE}
+# Manipulación de estructuras
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+
+# Para realizar plots
+library(scatterplot3d)
+library(ggplot2)
+library(plotly)
+
+# Manipulación de varios plots en una imagen.
+library(gridExtra)
+
+# Análisis bayesiano
+library("rethinking")
+```
+
+Si no tiene instalada la librería “rethinking”, ejecute las siguientes líneas de código para instalar la librería:
+
+```{r, eval=FALSE}
+install.packages("rethinking")
+```
+
+En caso de tener problemas al momento de instalar la librería con el código anterior, utilice las siguiente chunk:
+
+```{r, eval=FALSE}
+install.packages(c("mvtnorm","loo","coda"), repos="https://cloud.r-project.org/",dependencies=TRUE)
+options(repos=c(getOption('repos'), rethinking='http://xcelab.net/R'))
+install.packages('rethinking',type='source')
+```
+
+
+### Pregunta 1: Regresión Lineal Bayesiana
+
+El objetivo de esta pregunta es introducirlo en la aplicación de una regresión bayesiana. Con esto, buscaremos entender como calcular una regresión bayesiana en base al "motor" aproximación de Laplace, revisando como se comporta la credibilidad de sus predicciones y como la regresión lineal puede llegar a mutar a aplicar una transformación en el vector $x$. Para responder esta pregunta centre su desarrollo solo en las clases y las funciones que nos brinda la librería `rethinking`.
+
+Unos expertos en alometría deciden realizar un estudio de las alturas de unos niños en un colegio, buscando generar un regresor lineal bayesiano capaz de predecir la altura en base al peso de los alumnos. Para realizar este trabajo recopilan los datos `table_height.csv`, quien posee observaciones fisiológicas de 192 alumnos.
+
+**Parte I**
+
+En conocimiento los datos recopilados por los expertos, le solicitan realizar la siguiente serie de tareas:
+
+- [ ] Defina un modelo de regresión bayesiana, definiendo sus propios priors. Comente cada una de sus asunciones y señale a través de ecuaciones el modelo. Para definir los priors puede ser interesante la información recopilada en el siguiente link: [Priors](https://stacks.cdc.gov/view/cdc/100478)
+- [ ] Ajuste el modelo lineal utilizando el método de Laplace approximation. Estudie a través del comando `precis` los resultados obtenidos y coméntelos.
+- [ ] Gráfique el MAP de regresión lineal obtenida, añadiendo al gráfico el intervalo del $95\%$ que se tiene sobre la media y los valores predecidos de la altura. Comente los resultados obtenidos y señale si su modelo logra ser un buen predictor de los valores estudiados.
+
+
+```{r, eval=TRUE}
+# Leemos los datos de la tabla
+data_alturas <- read.csv("table_height.csv")
+head(data_alturas)
+
+# Generamos un histograma de los datos
+hist(data_alturas$age)
+```
+
+
+Notemos que lo que nos piden es estudiar las alturas en función del peso de unos niños de un colegio. Debido a que los recién nacidos no son estudiantes, y la mayoría de los niños comienzan sus estudios básicos al rededor de los 5 años, cortaremos los datos menores a 5 años.
+
+```{r, eval=TRUE}
+# Apartamos a los menores de 5 años del estudio
+data <- data_alturas[data_alturas$age >= 5,]
+
+# Creamos un histograma de las alturas para estimar distribuciones
+hist(data$weight)
+print(paste("weight mean: ", mean(data$weight)))
+print(paste("weight sd: ", sd(data$weight)))
+
+hist(data$height)
+print(paste("height mean: ",mean(data$height)))
+print(paste("height sd: ",sd(data$height)))
+
+```
+
+La idea del modelo es utilizar valores cercanos a la media y desviación estándar de los datos reales para poder definir priors acordes a su tipo de distribución.
+Así, el modelo estadístico quedará definido de la siguiente forma:
+
+$$ y_i \sim N(\mu_i, \sigma) \rightarrow likelihood$$
+$$ \mu_i = \beta_0 + \beta_1 \ast x_i \rightarrow modelo\ de\ regresi\acute{o}n$$
+$$\beta_0 \sim N(122.5, 18) \rightarrow\ Prior\ del\ \beta_0,\ utilizando\ los\ valores\ calculados\ del\ dataset$$
+$$\beta_1 \sim N(0,1) \rightarrow\ Prior\ del\ \beta_1,\ regularizado$$
+$$ \sigma \sim Uniform(0,20) \rightarrow\ Prior\ del\ sigma,\ el\ cual\ prohibe\ valores\ negativos,\ y\ su\ m\acute{a}ximo\ es\ la\ desviaci\acute{o}n\ est\acute{a}ndar\ del\ prior\ de\ \beta_0$$
+
+
+```{r, eval=TRUE}
+# Regresión utilizando Laplace Approximation
+data.reg <- quap(
+  alist(height ~ dnorm(mu, sigma),
+  mu <- b0 + b1*weight,
+  b0 ~ dnorm(122.5, 18),
+  b1 ~ dnorm(0, 1),
+  sigma ~ dunif(0, 20)), data=data
+)
+
+precis(data.reg, prob = 0.95)
+```
+
+Con los datos obtenidos de la regresión bayesiana, tenemos que en promedio beta0 (o el valor de la altura cuando el peso es 0) es de 76cm, mientras que la altura aumenta en promedio 2 centímetros por kilo.
+
+```{r, eval=TRUE}
+# samples from the posterior
+post <- extract.samples(data.reg, n= 1e4)
+
+library(MASS)
+
+# define sequence of weights to compute predictions for
+# these values will be on the horizontal axis
+weight.seq <- seq(from=10 , to=50 , by=1 )
+
+
+# Let's implement link ourselves
+mu.link <- function(weight) post$b0 + post$b1*weight
+mu <- sapply( weight.seq , mu.link )
+
+mu.mean <- apply( mu , 2 , mean )
+mu.HPDI <- apply( mu , 2 , HPDI , prob=0.95 )
+
+plot(height ~ weight , data=data , col=col.alpha(rangi2, 0.5))
+# plot the MAP line, aka the mean mu for each weight
+lines(weight.seq, mu.mean)
+# plot a shaded region for 95% HPPDI
+shade(mu.HPDI, weight.seq)
+
+# The same could have been done using the link function
+mu <- link(data.reg ,data=data.frame(weight=weight.seq), n=1e4 )
+
+
+
+# Predictor Intervals using the Posterior Predictive Distribution
+#Let's simulate heights not average heights
+height.weight <- function(weight) 
+  rnorm(
+    n=nrow(post) ,
+    mean=post$b0 + post$b1*weight ,
+    sd=post$sigma )
+
+sim.height <- sapply( weight.seq , height.weight)
+
+#or alternatively
+#sim.height <- sim( b.reg1 ,n=1e4, data=list(weight=weight.seq) )
+
+height.HPDI <- apply(sim.height, 2, HPDI, prob=0.95)
+
+# plot raw data
+plot(height ~ weight, data, col=col.alpha(rangi2,0.5))
+# draw MAP line
+lines(weight.seq , mu.mean )
+# draw HPDI region for line
+shade(mu.HPDI, weight.seq )
+# draw HPDI region for simulated heights
+shade(height.HPDI, weight.seq )
+
+```
+
+Ya obtenido el modelo de regresión podemos decir que si bien el modelo logra acercarse a la forma que toman los datos de los estudiantes, este no logra ajustarse perfectamente, debido a que estos no tienen una forma lineal bien definida.
+Lo anterior indica que un modelo totalmente lineal no logra representar bien los datos de los estudiantes.
+
+
+**Parte II**
+
+En base a los resultados obtenidos, el experto que trabaja con usted le señala que las alturas se suelen modelas con pesos logarítmicos, por lo que le sugiere añadir un logaritmo natural en el vector $x$ que compone su modelo lineal. Realice nuevamente la regresión utilizando un intervalo del $95\%$ sobre la media y los valores predecidos de la altura. Comente los resultados obtenidos, señalando si el modelo logra ajustar mejor los valores.
+
+```{r, eval=TRUE}
+# Ahora sobreescribimos los datos guardados en los pesos
+# y aplicamos logaritmo natural
+data$weight <- log(data$weight)
+
+hist(data$weight)
+print(paste("weight mean: ", mean(data$weight)))
+print(paste("weight sd: ", sd(data$weight)))
+
+hist(data$height)
+print(paste("height mean: ",mean(data$height)))
+print(paste("height sd: ",sd(data$height)))
+```
+
+Notar que lo que cambia en el modelo no es la distribución de las alturas, si no la pendiente que tomaría el modelo de regresión al reducir la distancia entre los valores de los pesos de los estudiantes.
+Por lo anterior, la distribución de b0 y de sigma se mantienen iguales, pero la de b1 aumenta notoriamente en un órden de 30 kilos por log(cm).
+
+```{r, eval=TRUE}
+data.reg <- quap(
+  alist(height ~ dnorm(mu, sigma),
+  mu <- b0 + b1*weight,
+  b0 ~ dnorm(122.5, 18),
+  b1 ~ dnorm(30, 10),   
+  sigma ~ dunif(0, 20)), data=data
+)
+# Ahora la pendiente va del órden de los 30cm por kilo, por lo que este
+# no puede seguir estando regularizado.
+
+# samples from the posterior
+post <- extract.samples(data.reg, n= 1e4)
+
+# define sequence of weights to compute predictions for
+# these values will be on the horizontal axis
+weight.seq <- seq(from=log(10) , to=log(50) , by= 0.4 )
+
+
+# Let's implement link ourselves
+mu.link <- function(weight) post$b0 + post$b1*weight
+mu <- sapply( weight.seq , mu.link )
+
+mu.mean <- apply( mu , 2 , mean )
+mu.HPDI <- apply( mu , 2 , HPDI , prob=0.95 )
+
+plot(height ~ weight , data=data , col=col.alpha(rangi2, 0.5))
+# plot the MAP line, aka the mean mu for each weight
+lines(weight.seq, mu.mean)
+# plot a shaded region for 95% HPPDI
+shade(mu.HPDI, weight.seq)
+
+# The same could have been done using the link function
+mu <- link(data.reg ,data=data.frame(weight=weight.seq), n=1e4 )
+
+
+
+# Predictor Intervals using the Posterior Predictive Distribution
+#Let's simulate heights not average heights
+height.weight <- function(weight) 
+  rnorm(
+    n=nrow(post) ,
+    mean=post$b0 + post$b1*weight ,
+    sd=post$sigma )
+
+sim.height <- sapply( weight.seq , height.weight)
+
+#or alternatively
+#sim.height <- sim( b.reg1 ,n=1e4, data=list(weight=weight.seq) )
+
+height.HPDI <- apply(sim.height, 2, HPDI, prob=0.95)
+
+# plot raw data
+plot(height ~ weight, data, col=col.alpha(rangi2,0.5))
+# draw MAP line
+lines(weight.seq , mu.mean )
+# draw HPDI region for line
+shade(mu.HPDI ,weight.seq )
+# draw HPDI region for simulated heights
+shade(height.HPDI ,weight.seq )
+```
+
+Con el modelo de regresión obtenido anteriormente, podemos determinar que este sí representa de buena manera los datos de los pesos y alturas de los estudiantes. 
+Podemos concluir que los pesos de los estudiantes respecto a sus alturas si toman una forma logarítmica, y esto se evidencia con la relación lineal observada en el modelo anterior. 
+
+#### **Pregunta 2:** MCMC
+
+El objetivo de esta pregunta es lograr samplear, mediante la técnica de MCMC, la distribución gamma. 
+
+En general la distribución gamma se denota por $\Gamma(\alpha,\beta)$ donde $\alpha$ y $\beta$ son parámetros positivos, a $\alpha$ se le suele llamar "shape" y a $\beta$ rate La densidad no normalizada de una distribución gamma esta dada por:
+
+$$
+f(x\mid \alpha,\beta) = 
+\begin{cases}
+ x^{\alpha -1}e^{-\beta x} ~ &\text{ si } x > 0\\
+0 ~&\text{si } x \leq 0
+\end{cases}
+$$
+
+- [ ] Implemente el algoritmo de metropolis hasting utilizando $q(\theta^{(t)} \mid \theta^{(t-1)}) = \mathcal{N}(\theta^{t-1},1)$, **importante** su función tiene que poder recibir:
+  - [ ] La condición inicial $\theta_{0}$.
+  - [ ] Cantidad de repeticiones.
+  - [ ] $\alpha$ y $\beta$.   
+  
+  Escriba el algoritmo sin utilizar implementenaciones de la distribución gamma en r. 
+  
+De ahora en adelante considere $\alpha = 5$ y $\beta = \frac{1}{5}$.
+
+  - [ ] Considere $\theta_{0} = 1$, grafique el histograma que obtiene para distintas cantidad de repeticiones, entre sus pruebas tiene que tener al menos una que tenga del orden de $10^5$ repeticiones ¿Como cambia la distribución en funcion de las repeticiones?
+  - [ ] Considere distintos valores de $\theta_{0}$ y una cantidad de repeticiones grande (del orden de $10^5$), grafique las distribuciones que obtenga comente sus resultados  ¿es importante la condición inicial del algoritmo?.
+  - [ ] Utilizando $\theta_{0}$ y cantidad de repeticiones conveniente (de acuerdo a lo que obtuvo en las partes anteriores) compare con la distribución real. **Obs:** En esta parte puede utilizar la distribución gamma que tiene implementado r para comparar con lo que usted realizo.
+
+**Respuesta:**
+
+```{r}
+
+gamma_not_normalized <- function(alpha, beta, x){
+  if(x > 0){
+    return ((x ^ (alpha - 1)) * (exp(-beta * x)))
+  } else{
+    return(0)
+  }
+}
+
+met <-function(theta0, rep, alpha, beta) {
+  gamma <- c(theta0)
+  for ( i in 2:rep ) {
+    current <- gamma[i-1]
+    proposal <- rnorm(1, current, 1)
+    r <- (gamma_not_normalized(alpha, beta, proposal)) / (gamma_not_normalized(alpha, beta, current))
+    prob_move <- min(r, 1)
+    decision <- rbinom(1, 1, prob_move)
+    gamma <- c(gamma, ifelse(decision == 1 , proposal , current))
+  }
+
+  return(gamma[2:rep])
+  
+} 
+
+
+```
+
+### Repeticiones crecientes
+
+Ya con nuestra función Gamma hecha con MCMC, podemos proceder a observar la distribución para distintas repeticiones de orden creciente para observar su comportamiento:
+
+```{r}
+alpha <- 5
+beta <- 1/5
+theta_0 <- 1
+rep <- 100
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+```
+
+```{r}
+rep <- 1000
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+```
+
+```{r}
+rep <- 10000
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+```
+
+```{r}
+rep <- 100000
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+
+```
+
+Es claro que a mayor cantidad de repeticiones, es más clara y marcada la forma de la distribución.
+
+### Para distintos valores de theta0
+
+A partir de este punto se utilizara la misma cantidad de repeticiones fijada en $rep = 100000$
+```{r}
+rep <- 100000
+```
+
+
+```{r}
+theta_0 <- 10
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+
+```
+
+
+```{r}
+theta_0 <- 23
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+
+```
+
+```{r}
+theta_0 <- 100
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+
+```
+
+```{r}
+theta_0 <- 500
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+
+```
+
+La condición inicial si es importante, puesto que a medida que theta0 aumenta, también lo hace la cantidad de valores extremos o poco frecuentes. Esto se debe a que el punto de partida de la función gamma parte en un valor extremo, y este va *viajando* hasta los valores de mayor densidad, tal como en el ejemplo del político con las islas.
+
+
+### Comparación con función Gamma de r
+
+```{r}
+
+theta_0 <- 1
+positions <- met(theta_0, rep, alpha, beta)
+simplehist(positions, xlab="x", ylab="gamma(x)")
+
+a <- rgamma(rep, rate = beta, shape = alpha)
+simplehist(a, xlab="x", ylab="gamma(x)")
+
+```
+
+Con los gráficos anteriores podemos concluir que ambas distribuciones sí son equivalentes y representan la misma función de densidad. Lo anterior refuerza las conclusiones del algoritmo de Metrópolis, ya que la distribución obtenida con el mismo corresponden en realidad a las probabilidades de la posterior de cada valor del parámetro f(theta | d), que en este caso corresponde a la función gamma.
+
+&nbsp;
+<hr />
+<p style="text-align: center;">A work by <a href="https://github.com/dccuchile/CC6104">CC6104</a></p>
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+    <a href="https://github.com/dccuchile/CC6104"><i class="fab fa-github" style='font-size:30px'></i></a>
+</p>
+
+<p style="text-align: center;">
+    <a href="https://discord.gg/XCbQvGs3Uf"><i class="fab fa-discord" style='font-size:30px'></i></a>
+</p>
+
+&nbsp;

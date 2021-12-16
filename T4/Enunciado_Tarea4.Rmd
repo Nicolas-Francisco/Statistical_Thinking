@@ -654,14 +654,13 @@ Usted sabe un dato extra sobre la información, los valores de $\sigma$ en la gr
 data_notas <- read.csv("notas.csv")
 
 # Función para crear likelihood dado mu y sigma
-grid_function <- function(mu, sigma){
-  likelihood <- prod(dnorm(data_notas$Notas, mean = mu, sd = sigma))
-  return(likelihood)
+grid_function <- function(mu,sigma){
+   prod(dnorm(data_notas$Notas, mean = mu, sd = sigma))
 }
 
 # Valores de la grilla
-grid_mu <- seq(from=0, to=1, length.out=100)
-grid_sigma <- seq(from=0, to=1, length.out=100)
+grid_mu <- seq(from=1, to=7, length.out=100)
+grid_sigma <- seq(from=0.5, to=1.5, length.out=100)
 
 # Se crea la grilla 2d
 data_grid <- expand_grid(grid_mu,grid_sigma)
@@ -673,8 +672,11 @@ data_grid$likelihood <- map2(data_grid$grid_mu,data_grid$grid_sigma, grid_functi
 data_grid <- unnest(data_grid,cols = c("likelihood"))
 
 # Valores de los priors
-prior_mu <- rep(1 , 100)
-prior_sigma <-  rep(1 , 100)
+
+# Como no tenemos información a priori de la media, asumiremos que todos son equiprobables
+prior_mu <- rep(1 , 100) 
+# Por otro lado sabemos que la primera mitad de valores es el doble de probable que la otra mitad
+prior_sigma <-  c(rep(2/3 , 50), rep(1/3, 50))
 
 # Se crea la grilla 2d de priors
 prior <- expand_grid(prior_mu,prior_sigma)
@@ -701,8 +703,10 @@ data_grid$posterior <- (data_grid$posterior - min(data_grid$posterior))/(max(dat
 # Punto de referencia
 # Se recomienda cambiar estos valores por unos adecuados que le permitan estudiar
 # Los valores de la distribución de mejor manera
-valor_x <- 2
-valor_y <- 2
+
+row <- data_grid[which.max(data_grid$posterior),]
+valor_x <- row$grid_mu
+valor_y <- row$grid_sigma
 
 # Grafico
 
@@ -733,6 +737,10 @@ plt <- data_grid %>%
 plt
 ```
 
+
+Con la distribución anterior podemos decir el el valor más probable se encuentra con la media entre 6 y 6.2, mientras que la desviación estandar entre 0,5 y 0,75. Es importante recalcar que esta distribución está en tres dimensiones, por lo que es posible dibujar una superficie en 3d donde se muestre la curva de distribución con el peak en el punto de comparación.
+
+
 - [ ] A continuación se presenta un código que permite realizara la distribución dada por sampling from grid approximation ¿Para que sirve este proceso? ¿Que puede deducir del gráfico?
 
 
@@ -753,7 +761,9 @@ df <- data.frame(posterior_samples$grid_mu,posterior_samples$grid_sigma)
 dens(df)
 ```
 
-> Idk uwu.
+Lo anterior es útil para poder visualizar de forma separada la distribución de la posterior por cada uno de los ejes, que en este caso es la media y el otro la desviación estándar. Con el gráfico podemos ver claramente que los valores de mayor probabilidad de la media están entre los valores 5.9 y 6.2, mientras que para los valroes de la desviación estándar, se encuentra entre 0.5 y 0.7.
+
+Es claro que para distintos valores de prior estas distribuciones cambiarían, en especial para la desviación estándar, en donde no asumimos equiprobabilidad entre valores de los rangos, si no que la primera mitad es el doble de probable que la segunda mitad de la distribución.
 
 
 &nbsp;
